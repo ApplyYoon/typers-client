@@ -71,8 +71,9 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
     }
 
     if (phase === 'english' && phaseRef.current === 'transition') {
-      // 전환 → 영어: 새 영어 텍스트 로드 & 포커스
+      // 전환 → 영어: isComposing 리셋 (한글 조합 중 전환 시 stuck 방지)
       phaseRef.current = 'english';
+      setIsComposing(false);
       const next = getRandomText('en');
       setText(next);
       setInputValue('');
