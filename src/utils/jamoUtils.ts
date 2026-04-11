@@ -94,3 +94,56 @@ export const isKoreanJamo = (c: string): boolean => {
   const code = c.charCodeAt(0);
   return code >= 0x3131 && code <= 0x3163;
 };
+
+/**
+ * 자모 배열을 부분 음절로 합성해서 표시용 글자를 반환
+ * ex) ['ㅅ'] → 'ㅅ', ['ㅅ','ㅏ'] → '사', ['ㅅ','ㅏ','ㅇ'] → '상'
+ * 겹모음·겹받침도 처리
+ */
+export function composePartialJamos(jamos: string[]): string {
+  if (jamos.length === 0) return '';
+  if (jamos.length === 1) return jamos[0]; // 자모 단독
+
+  const choIdx = CHOSEONG.indexOf(jamos[0]);
+  if (choIdx === -1) return jamos[0]; // 초성이 아니면 그대로
+
+  // ── 모음 결정 (겹모음 가능) ──
+  let jungIdx: number;
+  let afterJung: number; // jamos 중 모음 이후 시작 인덱스
+
+  // jamos[1] + jamos[2] 가 겹모음인지 확인
+  if (jamos.length >= 3) {
+    const compound = Object.entries(JUNGSEONG_DECOMP).find(
+      ([, [v1, v2]]) => v1 === jamos[1] && v2 === jamos[2],
+    );
+    if (compound) {
+      jungIdx  = JUNGSEONG.indexOf(compound[0]);
+      afterJung = 3;
+    } else {
+      jungIdx  = JUNGSEONG.indexOf(jamos[1]);
+      afterJung = 2;
+    }
+  } else {
+    jungIdx  = JUNGSEONG.indexOf(jamos[1]);
+    afterJung = 2;
+  }
+
+  if (jungIdx === -1) return jamos[0];
+
+  const base = HANGUL_BASE + (choIdx * 21 + jungIdx) * 28;
+
+  const remaining = jamos.slice(afterJung);
+  if (remaining.length === 0) return String.fromCharCode(base);
+
+  // ── 받침 결정 (겹받침 가능) ──
+  let jongIdx = 0;
+  if (remaining.length >= 2) {
+    const compound = Object.entries(JONGSEONG_DECOMP).find(
+      ([, [c1, c2]]) => c1 === remaining[0] && c2 === remaining[1],
+    );
+    if (compound) jongIdx = JONGSEONG.indexOf(compound[0]);
+  }
+  if (jongIdx === 0) jongIdx = JONGSEONG.indexOf(remaining[0]);
+
+  return String.fromCharCode(base + Math.max(jongIdx, 0));
+}

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { getRandomText, type Lang } from '../../data/texts';
 import {
   decomposeText,
+  composePartialJamos,
   isKoreanJamo,
   KOREAN_KEY_TO_JAMO,
   CODE_TO_QWERTY,
@@ -32,8 +33,9 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
   const [text, setText]           = useState(() => getRandomText(lang === 'mixed' ? 'ko' : lang));
 
   // 자모 단위 진행 상태
-  const [jamoPos, setJamoPos]   = useState(0);
-  const [hasError, setHasError] = useState(false);
+  const [jamoPos, setJamoPos]     = useState(0);
+  const [hasError, setHasError]   = useState(false);
+  const [wrongTyped, setWrongTyped] = useState(''); // 오타 시 실제 입력한 자모
 
   const [totalCorrect, setTotalCorrect] = useState(0);
   const [totalTyped,   setTotalTyped]   = useState(0);
@@ -50,6 +52,7 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
   useEffect(() => {
     setJamoPos(0);
     setHasError(false);
+    setWrongTyped('');
   }, [text]);
 
   // ── 카운트다운 ──────────────────────────────
@@ -123,9 +126,9 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
 
     e.preventDefault();
 
-    // Backspace: 오타 상태만 해제 (확정된 자모는 되돌릴 수 없음)
+    // Backspace: 오타 상태만 해제
     if (e.key === 'Backspace') {
-      if (hasError) setHasError(false);
+      if (hasError) { setHasError(false); setWrongTyped(''); }
       return;
     }
 
@@ -151,31 +154,46 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
 
     if (typed === expected) {
       setHasError(false);
+      setWrongTyped('');
       setTotalCorrect(n => n + 1);
       const nextPos = jamoPos + 1;
 
       if (nextPos >= jamoSequence.length) {
-        // 문장 완료 → 다음 문장
         const nextLang = phaseRef.current === 'english' ? 'en' : 'ko';
         setText(getRandomText(nextLang));
-        // jamoPos/hasError는 text 변경 useEffect에서 리셋됨
       } else {
         setJamoPos(nextPos);
       }
     } else {
       setHasError(true);
+      setWrongTyped(typed);
     }
   }, [started, hasError, jamoInfo, jamoPos]);
 
   // ── 렌더 헬퍼 ───────────────────────────────
-  const getSyllableClass = (i: number): string => {
+  const getSyllableDisplay = (i: number, targetChar: string): { cls: string; char: string } => {
     const range = jamoInfo.syllableRanges[i];
-    if (jamoPos >= range.end)   return 'correct';
-    if (jamoPos < range.start)  return 'pending';
+
+    // 완료된 음절 → 원래 글자 보라
+    if (jamoPos >= range.end) return { cls: 'correct', char: targetChar };
+
+    // 아직 안 온 음절 → 회색
+    if (jamoPos < range.start) return { cls: 'pending', char: targetChar };
+
     // 현재 진행 중인 음절
-    if (hasError)               return 'wrong';
-    if (jamoPos === range.start) return 'cursor';
-    return 'composing';
+    if (hasError) {
+      // 틀린 자모 빨간색으로 표시
+      return { cls: 'wrong', char: wrongTyped || targetChar };
+    }
+
+    if (jamoPos === range.start) {
+      // 이 음절의 첫 자모를 아직 안 쳤음 → 커서
+      return { cls: 'cursor', char: targetChar };
+    }
+
+    // 일부 자모를 올바르게 쳤음 → 부분 음절 합성해서 보라색으로
+    const typedJamos = jamoInfo.jamoSequence.slice(range.start, jamoPos);
+    return { cls: 'composing', char: composePartialJamos(typedJamos) };
   };
 
   const phase      = getPhase(timeLeft, lang);
@@ -279,11 +297,12 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
         <img src={charSrc} alt="character" className="arena-character-img" />
       </div>
 
-      {/* 목표 문장 — 음절 단위 색상 */}
+      {/* 목표 문장 — 음절 단위 색상 + 실제 입력 글자 표시 */}
       <div className="arena-text" onClick={() => inputRef.current?.focus()}>
-        {text.split('').map((char, i) => (
-          <span key={i} className={`char-${getSyllableClass(i)}`}>{char}</span>
-        ))}
+        {text.split('').map((char, i) => {
+          const { cls, char: displayChar } = getSyllableDisplay(i, char);
+          return <span key={i} className={`char-${cls}`}>{displayChar}</span>;
+        })}
       </div>
 
       {/* 숨겨진 입력창 — keydown 캡처 전용 */}
