@@ -7,9 +7,9 @@ interface Props {
   onFinish: (score: number, accuracy: number) => void;
 }
 
-const TOTAL       = 60;
-const KO_END      = 20; // timeLeft=20 → 한국어 40초 완료
-const TRANS_END   = 15; // timeLeft=15 → 전환 5초 완료
+const TOTAL       = 65;
+const KO_END      = 25; // timeLeft=25 → 한국어 40초 완료
+const TRANS_END   = 20; // timeLeft=20 → 전환 5초 완료
 
 type Phase = 'korean' | 'transition' | 'english';
 
@@ -196,7 +196,7 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
         <div className="countdown-number">{countdown === 0 ? 'GO!' : countdown}</div>
         <p className="countdown-sub">
           {lang === 'mixed'
-            ? '혼합 모드 · 한국어 40초 → 영어 15초'
+            ? '혼합 모드 · 한국어 40초 → 영어 20초'
             : lang === 'ko' ? '한타 모드 · 1분' : '영타 모드 · 1분'}
         </p>
       </div>

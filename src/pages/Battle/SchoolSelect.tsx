@@ -73,7 +73,7 @@ const SchoolSelect: React.FC<Props> = ({ onConfirm }) => {
           <div className="battle-logo">
             <span className="battle-logo-emoji">🍇</span>
             <h1 className="battle-logo-title">학교 대항전</h1>
-            <p className="battle-logo-sub">한국어 40초 · 영어 15초 · CPM 측정</p>
+            <p className="battle-logo-sub">한국어 40초 · 영어 20초 · CPM 측정</p>
           </div>
 
           {/* 닉네임 */}
