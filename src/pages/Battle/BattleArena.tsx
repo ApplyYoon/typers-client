@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { getRandomText, type Lang } from '../../data/texts';
+import { keystrokesForChar } from '../../utils/keystrokes';
 
 interface Props {
   lang: Lang;
@@ -108,10 +109,13 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
     const currentText = textRef.current;
     if (newVal.length > prevVal.length) {
       let correct = 0;
+      let typed = 0;
       for (let i = prevVal.length; i < newVal.length; i++) {
-        if (newVal[i] === currentText[i]) correct++;
+        const ks = keystrokesForChar(newVal[i]);
+        typed += ks;
+        if (newVal[i] === currentText[i]) correct += ks;
       }
-      setTotalTyped((n) => n + (newVal.length - prevVal.length));
+      setTotalTyped((n) => n + typed);
       setTotalCorrect((n) => n + correct);
     }
     if (newVal === currentText) {
@@ -138,10 +142,13 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
     const prevLen = inputValue.length;
     if (newVal.length > prevLen) {
       let correct = 0;
+      let typed = 0;
       for (let i = prevLen; i < newVal.length; i++) {
-        if (newVal[i] === currentText[i]) correct++;
+        const ks = keystrokesForChar(newVal[i]);
+        typed += ks;
+        if (newVal[i] === currentText[i]) correct += ks;
       }
-      setTotalTyped((n) => n + (newVal.length - prevLen));
+      setTotalTyped((n) => n + typed);
       setTotalCorrect((n) => n + correct);
     }
     if (newVal === currentText) {
