@@ -492,6 +492,19 @@
   height: 100px;
 }
 
+/* Character */
+.arena-character {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+.arena-character-img {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  image-rendering: auto;
+}
+
 /* Text */
 .arena-text {
   background: #fff;

@@ -30,6 +30,7 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
   const [totalCorrect, setTotalCorrect] = useState(0);
   const [totalTyped,   setTotalTyped]   = useState(0);
   const [liveCpm, setLiveCpm]       = useState(0);
+  const [frame, setFrame]           = useState<1 | 2>(1);
 
   const inputRef     = useRef<HTMLInputElement>(null);
   const startTimeRef = useRef<number>(0);
@@ -132,6 +133,7 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
         return;
       }
       countAndStore(newVal, prevVal.length, currentText);
+      setFrame((f) => (f === 1 ? 2 : 1));
     }
 
     if (newVal === currentText) {
@@ -163,6 +165,7 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
         return;
       }
       countAndStore(newVal, inputValue.length, currentText);
+      setFrame((f) => (f === 1 ? 2 : 1));
     }
 
     if (newVal === currentText) {
@@ -184,6 +187,8 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
 
   const phase       = getPhase(timeLeft, lang);
   const timerPct    = (timeLeft / TOTAL) * 100;
+  const charLevel   = liveCpm >= 400 ? 3 : liveCpm >= 200 ? 2 : 1;
+  const charSrc     = `/typing/character_typing_${charLevel}-${frame}.png`;
   const timerColor  = timeLeft > KO_END ? '#7c3aed' : timeLeft > TRANS_END ? '#f59e0b' : '#10b981';
   const accuracy    = totalTyped > 0 ? Math.round((totalCorrect / totalTyped) * 100) : 100;
   const transCount  = timeLeft - TRANS_END; // 5,4,3,2,1
@@ -280,6 +285,11 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
           {phase === 'korean' && <span className="phase-remain"> · {timeLeft - KO_END}초 후 영어 전환</span>}
         </div>
       )}
+
+      {/* 캐릭터 */}
+      <div className="arena-character">
+        <img src={charSrc} alt="character" className="arena-character-img" />
+      </div>
 
       {/* 목표 문장 */}
       <div className="arena-text">
