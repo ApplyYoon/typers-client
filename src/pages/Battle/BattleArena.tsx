@@ -239,11 +239,16 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
   };
 
   // ── 렌더 헬퍼 ────────────────────────────────
+  // 조합 중인 글자 (liveValue에서 확정 이후 부분)
+  const composingPart = isComposing ? liveValue.slice(inputValue.length) : '';
+
   const charDisplay = text.split('').map((char, i) => {
     if (isComposing) {
-      // 조합 중: 확정된 글자만 correct/wrong, 현재 조합 위치는 'composing'
       if (i < inputValue.length) return inputValue[i] === char ? 'correct' : 'wrong';
-      if (i === inputValue.length) return 'composing';
+      // 조합 중인 글자 범위 → 'composing'
+      if (i < inputValue.length + composingPart.length) return 'composing';
+      // 조합 시작 전 커서
+      if (composingPart.length === 0 && i === inputValue.length) return 'cursor';
       return 'pending';
     }
     if (i < liveValue.length) return liveValue[i] === char ? 'correct' : 'wrong';
@@ -359,9 +364,16 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
 
       {/* 목표 문장 — 클릭 시 숨겨진 input 포커스 */}
       <div className="arena-text" onClick={() => inputRef.current?.focus()}>
-        {text.split('').map((char, i) => (
-          <span key={i} className={`char-${charDisplay[i]}`}>{char}</span>
-        ))}
+        {text.split('').map((targetChar, i) => {
+          const composingOffset = i - inputValue.length;
+          const displayChar =
+            isComposing && composingOffset >= 0 && composingOffset < composingPart.length
+              ? composingPart[composingOffset]  // 조합 중인 실제 글자로 교체
+              : targetChar;
+          return (
+            <span key={i} className={`char-${charDisplay[i]}`}>{displayChar}</span>
+          );
+        })}
       </div>
 
       {/* 숨겨진 입력창 — 키 캡처 전용 */}
