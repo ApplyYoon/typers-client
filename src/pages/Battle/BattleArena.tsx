@@ -105,19 +105,34 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
   }, [onFinish]);
 
   // ── 입력 처리 ────────────────────────────────
+  // prevVal에 오타가 있으면 앞으로 진행 불가 (backspace만 허용)
+  const hasError = (val: string, target: string) =>
+    val.split('').some((c, i) => c !== target[i]);
+
+  const countAndStore = (newVal: string, fromIdx: number, target: string) => {
+    let correct = 0;
+    let typed = 0;
+    for (let i = fromIdx; i < newVal.length; i++) {
+      const ks = keystrokesForChar(newVal[i]);
+      typed += ks;
+      if (newVal[i] === target[i]) correct += ks;
+    }
+    setTotalTyped((n) => n + typed);
+    setTotalCorrect((n) => n + correct);
+  };
+
   const commit = useCallback((newVal: string, prevVal: string) => {
     const currentText = textRef.current;
+
     if (newVal.length > prevVal.length) {
-      let correct = 0;
-      let typed = 0;
-      for (let i = prevVal.length; i < newVal.length; i++) {
-        const ks = keystrokesForChar(newVal[i]);
-        typed += ks;
-        if (newVal[i] === currentText[i]) correct += ks;
+      // 오타가 있는 상태에서 앞으로 진행 시도 → 차단
+      if (hasError(prevVal, currentText)) {
+        if (inputRef.current) inputRef.current.value = prevVal;
+        return;
       }
-      setTotalTyped((n) => n + typed);
-      setTotalCorrect((n) => n + correct);
+      countAndStore(newVal, prevVal.length, currentText);
     }
+
     if (newVal === currentText) {
       const nextLang = phaseRef.current === 'english' ? 'en' : 'ko';
       setText(getRandomText(nextLang));
@@ -139,20 +154,19 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
     setIsComposing(false);
     const newVal = (e.target as HTMLInputElement).value;
     const currentText = textRef.current;
-    const prevLen = inputValue.length;
-    if (newVal.length > prevLen) {
-      let correct = 0;
-      let typed = 0;
-      for (let i = prevLen; i < newVal.length; i++) {
-        const ks = keystrokesForChar(newVal[i]);
-        typed += ks;
-        if (newVal[i] === currentText[i]) correct += ks;
+
+    if (newVal.length > inputValue.length) {
+      // 오타가 있는 상태에서 조합 완료 시도 → 차단
+      if (hasError(inputValue, currentText)) {
+        if (inputRef.current) inputRef.current.value = inputValue;
+        return;
       }
-      setTotalTyped((n) => n + typed);
-      setTotalCorrect((n) => n + correct);
+      countAndStore(newVal, inputValue.length, currentText);
     }
+
     if (newVal === currentText) {
-      setText(getRandomText('ko'));
+      const nextLang = phaseRef.current === 'english' ? 'en' : 'ko';
+      setText(getRandomText(nextLang));
       setInputValue('');
       if (inputRef.current) inputRef.current.value = '';
     } else {
