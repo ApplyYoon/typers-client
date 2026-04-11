@@ -39,8 +39,9 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
   const finishedRef     = useRef(false);
   const phaseRef        = useRef<Phase>(getPhase(TOTAL, lang));
   const textRef         = useRef(text);
-  // correctFloor: 올바르게 확정된 글자 수 (이 위치까지 backspace 차단)
   const correctFloorRef = useRef(0);
+  // isComposing을 ref로도 관리 (state는 async라 handleChange 클로저에서 stale할 수 있음)
+  const isComposingRef  = useRef(false);
 
   useEffect(() => { textRef.current = text; }, [text]);
 
@@ -174,7 +175,7 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!started) return;
-    if (isComposing) {
+    if (isComposingRef.current) {
       // 조합 중: 점수 반영 없이 화면 표시만 업데이트
       setLiveValue(e.target.value);
       return;
@@ -185,8 +186,7 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!started) return;
 
-    // correctFloor 아래로 backspace 차단 (조합 중엔 IME가 처리하므로 제외)
-    if (e.key === 'Backspace' && !isComposing) {
+    if (e.key === 'Backspace' && !isComposingRef.current) {
       const currentLen = inputRef.current?.value?.length ?? 0;
       if (currentLen <= correctFloorRef.current) {
         e.preventDefault();
@@ -199,9 +199,18 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
     }
   };
 
-  const handleCompositionStart = () => setIsComposing(true);
+  const handleCompositionStart = () => {
+    isComposingRef.current = true;
+    setIsComposing(true);
+  };
+
+  // 조합 진행 중 실시간 업데이트 (onChange가 composition 중 안 오는 브라우저 대응)
+  const handleCompositionUpdate = (e: React.CompositionEvent<HTMLInputElement>) => {
+    setLiveValue((e.target as HTMLInputElement).value);
+  };
 
   const handleCompositionEnd = (e: React.CompositionEvent<HTMLInputElement>) => {
+    isComposingRef.current = false;
     setIsComposing(false);
     const newVal = (e.target as HTMLInputElement).value;
     const currentText = textRef.current;
@@ -230,8 +239,13 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
   };
 
   // ── 렌더 헬퍼 ────────────────────────────────
-  // 표시는 liveValue 기준 (조합 중인 글자도 실시간 반영)
   const charDisplay = text.split('').map((char, i) => {
+    if (isComposing) {
+      // 조합 중: 확정된 글자만 correct/wrong, 현재 조합 위치는 'composing'
+      if (i < inputValue.length) return inputValue[i] === char ? 'correct' : 'wrong';
+      if (i === inputValue.length) return 'composing';
+      return 'pending';
+    }
     if (i < liveValue.length) return liveValue[i] === char ? 'correct' : 'wrong';
     if (i === liveValue.length) return 'cursor';
     return 'pending';
@@ -357,6 +371,7 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         onCompositionStart={handleCompositionStart}
+        onCompositionUpdate={handleCompositionUpdate}
         onCompositionEnd={handleCompositionEnd}
         autoComplete="off"
         autoCorrect="off"

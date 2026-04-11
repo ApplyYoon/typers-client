@@ -528,9 +528,14 @@
   white-space: pre-wrap;
 }
 
-.char-pending { color: #d1d5db; }
-.char-correct { color: #7c3aed; font-weight: 500; }
-.char-wrong   { color: #ef4444; background: #fee2e2; border-radius: 3px; }
+.char-pending   { color: #d1d5db; }
+.char-correct   { color: #7c3aed; font-weight: 500; }
+.char-wrong     { color: #ef4444; background: #fee2e2; border-radius: 3px; }
+.char-composing {
+  color: #7c3aed;
+  border-bottom: 2px solid #7c3aed;
+  opacity: 0.6;
+}
 .char-cursor  {
   color: #d1d5db;
   border-left: 2.5px solid #7c3aed;
