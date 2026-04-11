@@ -26,17 +26,22 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
   const [timeLeft, setTimeLeft]     = useState(TOTAL);
   const [text, setText]             = useState(() => getRandomText(lang === 'mixed' ? 'ko' : lang));
   const [inputValue, setInputValue] = useState('');
+  // liveValue: inputValue + 현재 조합 중인 글자까지 포함 (한국어 실시간 표시용)
+  const [liveValue, setLiveValue]   = useState('');
   const [isComposing, setIsComposing] = useState(false);
   const [totalCorrect, setTotalCorrect] = useState(0);
   const [totalTyped,   setTotalTyped]   = useState(0);
   const [liveCpm, setLiveCpm]       = useState(0);
   const [frame, setFrame]           = useState<1 | 2>(1);
 
-  const inputRef     = useRef<HTMLInputElement>(null);
-  const startTimeRef = useRef<number>(0);
-  const finishedRef  = useRef(false);
-  const phaseRef     = useRef<Phase>(getPhase(TOTAL, lang));
-  const textRef      = useRef(text);
+  const inputRef        = useRef<HTMLInputElement>(null);
+  const startTimeRef    = useRef<number>(0);
+  const finishedRef     = useRef(false);
+  const phaseRef        = useRef<Phase>(getPhase(TOTAL, lang));
+  const textRef         = useRef(text);
+  // correctFloor: 올바르게 확정된 글자 수 (이 위치까지 backspace 차단)
+  const correctFloorRef = useRef(0);
+
   useEffect(() => { textRef.current = text; }, [text]);
 
   // ── 초기 카운트다운 ──────────────────────────
@@ -65,19 +70,21 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
     const phase = getPhase(timeLeft, lang);
 
     if (phase === 'transition' && phaseRef.current === 'korean') {
-      // 한국어 → 전환: 입력창 비우기
       phaseRef.current = 'transition';
+      correctFloorRef.current = 0;
       setInputValue('');
+      setLiveValue('');
       if (inputRef.current) inputRef.current.value = '';
     }
 
     if (phase === 'english' && phaseRef.current === 'transition') {
-      // 전환 → 영어: isComposing 리셋 (한글 조합 중 전환 시 stuck 방지)
       phaseRef.current = 'english';
       setIsComposing(false);
+      correctFloorRef.current = 0;
       const next = getRandomText('en');
       setText(next);
       setInputValue('');
+      setLiveValue('');
       if (inputRef.current) { inputRef.current.value = ''; inputRef.current.focus(); }
     }
   }, [timeLeft, started, lang]);
@@ -107,7 +114,6 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
   }, [onFinish]);
 
   // ── 입력 처리 ────────────────────────────────
-  // prevVal에 오타가 있으면 앞으로 진행 불가 (backspace만 허용)
   const hasError = (val: string, target: string) =>
     val.split('').some((c, i) => c !== target[i]);
 
@@ -123,36 +129,71 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
     setTotalCorrect((n) => n + correct);
   };
 
+  // 올바르게 입력된 연속 글자 수 계산 (첫 오타 이전까지)
+  const calcFloor = (val: string, target: string) => {
+    let floor = 0;
+    for (let i = 0; i < val.length; i++) {
+      if (val[i] === target[i]) floor = i + 1;
+      else break;
+    }
+    return floor;
+  };
+
+  const resetInput = () => {
+    correctFloorRef.current = 0;
+    setInputValue('');
+    setLiveValue('');
+    if (inputRef.current) inputRef.current.value = '';
+  };
+
   const commit = useCallback((newVal: string, prevVal: string) => {
     const currentText = textRef.current;
 
     if (newVal.length > prevVal.length) {
-      // 오타가 있는 상태에서 앞으로 진행 시도 → 차단
       if (hasError(prevVal, currentText)) {
         if (inputRef.current) inputRef.current.value = prevVal;
         return;
       }
       countAndStore(newVal, prevVal.length, currentText);
+      // correctFloor 갱신 (항상 최고점으로)
+      correctFloorRef.current = Math.max(
+        correctFloorRef.current,
+        calcFloor(newVal, currentText),
+      );
     }
 
     if (newVal === currentText) {
       const nextLang = phaseRef.current === 'english' ? 'en' : 'ko';
       setText(getRandomText(nextLang));
-      setInputValue('');
-      if (inputRef.current) inputRef.current.value = '';
+      resetInput();
     } else {
       setInputValue(newVal);
+      setLiveValue(newVal);
     }
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!started || isComposing) return;
+    if (!started) return;
+    if (isComposing) {
+      // 조합 중: 점수 반영 없이 화면 표시만 업데이트
+      setLiveValue(e.target.value);
+      return;
+    }
     commit(e.target.value, inputValue);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!started) return;
-    // 실제 문자 입력 키에만 반응 (수식어·방향키·기능키 제외)
+
+    // correctFloor 아래로 backspace 차단 (조합 중엔 IME가 처리하므로 제외)
+    if (e.key === 'Backspace' && !isComposing) {
+      const currentLen = inputRef.current?.value?.length ?? 0;
+      if (currentLen <= correctFloorRef.current) {
+        e.preventDefault();
+        return;
+      }
+    }
+
     if (e.key.length === 1 || e.key === 'Process') {
       setFrame((f) => (f === 1 ? 2 : 1));
     }
@@ -166,28 +207,33 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
     const currentText = textRef.current;
 
     if (newVal.length > inputValue.length) {
-      // 오타가 있는 상태에서 조합 완료 시도 → 차단
       if (hasError(inputValue, currentText)) {
         if (inputRef.current) inputRef.current.value = inputValue;
+        setLiveValue(inputValue);
         return;
       }
       countAndStore(newVal, inputValue.length, currentText);
+      correctFloorRef.current = Math.max(
+        correctFloorRef.current,
+        calcFloor(newVal, currentText),
+      );
     }
 
     if (newVal === currentText) {
       const nextLang = phaseRef.current === 'english' ? 'en' : 'ko';
       setText(getRandomText(nextLang));
-      setInputValue('');
-      if (inputRef.current) inputRef.current.value = '';
+      resetInput();
     } else {
       setInputValue(newVal);
+      setLiveValue(newVal);
     }
   };
 
   // ── 렌더 헬퍼 ────────────────────────────────
+  // 표시는 liveValue 기준 (조합 중인 글자도 실시간 반영)
   const charDisplay = text.split('').map((char, i) => {
-    if (i < inputValue.length) return inputValue[i] === char ? 'correct' : 'wrong';
-    if (i === inputValue.length) return 'cursor';
+    if (i < liveValue.length) return liveValue[i] === char ? 'correct' : 'wrong';
+    if (i === liveValue.length) return 'cursor';
     return 'pending';
   });
 
@@ -197,7 +243,7 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
   const charSrc     = `/typing/character_typing_${charLevel}-${frame}.png`;
   const timerColor  = timeLeft > KO_END ? '#7c3aed' : timeLeft > TRANS_END ? '#f59e0b' : '#10b981';
   const accuracy    = totalTyped > 0 ? Math.round((totalCorrect / totalTyped) * 100) : 100;
-  const transCount  = timeLeft - TRANS_END; // 5,4,3,2,1
+  const transCount  = timeLeft - TRANS_END;
 
   // ── 초기 카운트다운 화면 ──────────────────────
   if (!started) {
