@@ -3,7 +3,6 @@ import SchoolSelect from './SchoolSelect';
 import BattleArena from './BattleArena';
 import BattleResult from './BattleResult';
 import { saveRecord, seedDemoData } from '../../utils/battleStorage';
-import type { Lang } from '../../data/texts';
 import './Battle.css';
 
 type Step = 'select' | 'arena' | 'result';
@@ -11,7 +10,6 @@ type Step = 'select' | 'arena' | 'result';
 interface BattleState {
   schoolId: string;
   username: string;
-  lang: Lang;
   score: number;
   accuracy: number;
 }
@@ -23,36 +21,25 @@ const Battle: React.FC = () => {
   const [state, setState] = useState<BattleState>({
     schoolId: '',
     username: '',
-    lang: 'ko',
     score: 0,
     accuracy: 0,
   });
 
-  const handleConfirmSelect = (schoolId: string, username: string, lang: Lang) => {
-    setState((s) => ({ ...s, schoolId, username, lang }));
+  const handleConfirmSelect = (schoolId: string, username: string) => {
+    setState((s) => ({ ...s, schoolId, username }));
     setStep('arena');
   };
 
   const handleFinish = (score: number, accuracy: number) => {
-    const record = {
+    saveRecord({
       schoolId: state.schoolId,
       username: state.username,
       score,
       accuracy,
-      lang: state.lang,
       timestamp: Date.now(),
-    };
-    saveRecord(record);
+    });
     setState((s) => ({ ...s, score, accuracy }));
     setStep('result');
-  };
-
-  const handleRetry = () => {
-    setStep('arena');
-  };
-
-  const handleChangeSchool = () => {
-    setStep('select');
   };
 
   return (
@@ -62,8 +49,8 @@ const Battle: React.FC = () => {
       )}
       {step === 'arena' && (
         <BattleArena
-          key={`${state.lang}-${Date.now()}`}
-          lang={state.lang}
+          key={Date.now()}
+          lang="mixed"
           onFinish={handleFinish}
         />
       )}
@@ -73,9 +60,8 @@ const Battle: React.FC = () => {
           username={state.username}
           score={state.score}
           accuracy={state.accuracy}
-          lang={state.lang}
-          onRetry={handleRetry}
-          onChangeSchool={handleChangeSchool}
+          onRetry={() => setStep('arena')}
+          onChangeSchool={() => setStep('select')}
         />
       )}
     </div>

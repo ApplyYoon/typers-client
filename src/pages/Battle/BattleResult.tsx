@@ -1,60 +1,48 @@
 import React from 'react';
 import { SCHOOLS } from '../../data/schools';
 import { getSchoolStats } from '../../utils/battleStorage';
-import type { Lang } from '../../data/texts';
 
 interface Props {
   schoolId: string;
   username: string;
   score: number;
   accuracy: number;
-  lang: Lang;
   onRetry: () => void;
   onChangeSchool: () => void;
 }
+
+const RANK_IMAGES: Record<number, string> = {
+  1: '/rank_gold.png',
+  2: '/rank_silver.png',
+  3: '/rank_bronze.png',
+};
+
+const getRankDisplay = (rank: number) => {
+  if (rank <= 3) {
+    return <img src={RANK_IMAGES[rank]} alt={`${rank}위`} className="rank-crown-img" />;
+  }
+  return <span>{rank}위</span>;
+};
+
+const getScoreComment = (s: number) => {
+  if (s >= 700) return '신의 경지!';
+  if (s >= 500) return '타이핑 고수!';
+  if (s >= 350) return '준수한 실력!';
+  if (s >= 200) return '계속 연습하면 늘 거예요!';
+  return '포기하지 마세요!';
+};
 
 const BattleResult: React.FC<Props> = ({
   schoolId,
   username,
   score,
   accuracy,
-  lang,
   onRetry,
   onChangeSchool,
 }) => {
-  const stats = getSchoolStats(lang);
+  const stats = getSchoolStats();
   const mySchool = SCHOOLS.find((s) => s.id === schoolId);
   const myRank = stats.findIndex((s) => s.schoolId === schoolId) + 1;
-  const scoreLabel = lang === 'ko' ? '타/분' : 'WPM';
-
-  const RANK_IMAGES: Record<number, string> = {
-    1: '/rank_gold.png',
-    2: '/rank_silver.png',
-    3: '/rank_bronze.png',
-  };
-
-  const getRankDisplay = (rank: number) => {
-    if (rank <= 3) {
-      return <img src={RANK_IMAGES[rank]} alt={`${rank}위`} className="rank-crown-img" />;
-    }
-    return <span>{rank}위</span>;
-  };
-
-  const getScoreComment = (s: number) => {
-    if (lang === 'ko') {
-      if (s >= 700) return '신의 경지!';
-      if (s >= 500) return '타이핑 고수!';
-      if (s >= 350) return '준수한 실력!';
-      if (s >= 200) return '계속 연습하면 늘 거예요!';
-      return '포기하지 마세요!';
-    } else {
-      if (s >= 120) return 'Legendary!';
-      if (s >= 90) return 'Expert Typist!';
-      if (s >= 60) return 'Above Average!';
-      if (s >= 40) return 'Keep Practicing!';
-      return "Don't give up!";
-    }
-  };
 
   return (
     <div className="result-page">
@@ -72,7 +60,7 @@ const BattleResult: React.FC<Props> = ({
 
           <div className="result-main-score">
             <span className="result-score-num">{score.toLocaleString()}</span>
-            <span className="result-score-unit">{scoreLabel}</span>
+            <span className="result-score-unit">CPM</span>
           </div>
           <p className="result-comment">{getScoreComment(score)}</p>
 
@@ -87,19 +75,12 @@ const BattleResult: React.FC<Props> = ({
                 {myRank > 0 ? getRankDisplay(myRank) : '-'}
               </span>
             </div>
-            <div className="result-sub-stat">
-              <span className="result-sub-label">모드</span>
-              <span className="result-sub-value">{lang === 'ko' ? '한타' : '영타'}</span>
-            </div>
           </div>
         </div>
 
         {/* School ranking */}
         <div className="school-ranking-card">
-          <h3 className="school-ranking-title">
-            🏫 학교 대항전 랭킹
-            <span className="school-ranking-mode">{lang === 'ko' ? '한타' : '영타'}</span>
-          </h3>
+          <h3 className="school-ranking-title">학교 대항전 랭킹</h3>
 
           <div className="school-ranking-list">
             {stats.slice(0, 8).map((stat, idx) => {
@@ -112,10 +93,7 @@ const BattleResult: React.FC<Props> = ({
                   style={isMine ? { borderColor: mySchool?.color } : {}}
                 >
                   <span className="school-rank-pos">{getRankDisplay(idx + 1)}</span>
-                  <div
-                    className="school-rank-color"
-                    style={{ background: school?.color ?? '#ccc' }}
-                  />
+                  <div className="school-rank-color" style={{ background: school?.color ?? '#ccc' }} />
                   <span className="school-rank-name">{school?.shortName ?? stat.schoolId}</span>
                   <div className="school-rank-bar-wrap">
                     <div
@@ -127,7 +105,7 @@ const BattleResult: React.FC<Props> = ({
                     />
                   </div>
                   <span className="school-rank-score">
-                    {stat.avgScore.toLocaleString()} <small>{scoreLabel}</small>
+                    {stat.avgScore.toLocaleString()} <small>CPM</small>
                   </span>
                   <span className="school-rank-count">{stat.count}명</span>
                 </div>
@@ -138,12 +116,8 @@ const BattleResult: React.FC<Props> = ({
 
         {/* Actions */}
         <div className="result-actions">
-          <button className="result-retry-btn" onClick={onRetry}>
-            다시 도전
-          </button>
-          <button className="result-change-btn" onClick={onChangeSchool}>
-            학교 변경
-          </button>
+          <button className="result-retry-btn" onClick={onRetry}>다시 도전</button>
+          <button className="result-change-btn" onClick={onChangeSchool}>학교 변경</button>
         </div>
       </div>
     </div>

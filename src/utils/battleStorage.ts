@@ -1,11 +1,8 @@
-import type { Lang } from '../data/texts';
-
 export interface BattleRecord {
   schoolId: string;
   username: string;
-  score: number; // 타/분 for ko, WPM for en
+  score: number; // CPM
   accuracy: number;
-  lang: Lang;
   timestamp: number;
 }
 
@@ -32,8 +29,8 @@ export function getRecords(): BattleRecord[] {
   }
 }
 
-export function getSchoolStats(lang: Lang): SchoolStat[] {
-  const records = getRecords().filter((r) => r.lang === lang);
+export function getSchoolStats(): SchoolStat[] {
+  const records = getRecords();
   const map = new Map<string, number[]>();
 
   for (const r of records) {
@@ -55,24 +52,18 @@ export function seedDemoData(): void {
   if (getRecords().length > 0) return;
 
   const schoolIds = ['snu', 'yonsei', 'korea', 'sogang', 'hanyang', 'hongik'];
-  const langs: Lang[] = ['ko', 'en'];
   const records: BattleRecord[] = [];
 
   for (const schoolId of schoolIds) {
-    for (const lang of langs) {
-      const base = lang === 'ko'
-        ? 300 + Math.floor(Math.random() * 300)
-        : 60 + Math.floor(Math.random() * 60);
-      for (let i = 0; i < 3 + Math.floor(Math.random() * 5); i++) {
-        records.push({
-          schoolId,
-          username: `user_${Math.random().toString(36).slice(2, 6)}`,
-          score: base + Math.floor(Math.random() * 100) - 50,
-          accuracy: 85 + Math.floor(Math.random() * 15),
-          lang,
-          timestamp: Date.now() - Math.floor(Math.random() * 86400000),
-        });
-      }
+    const base = 300 + Math.floor(Math.random() * 300);
+    for (let i = 0; i < 3 + Math.floor(Math.random() * 5); i++) {
+      records.push({
+        schoolId,
+        username: `user_${Math.random().toString(36).slice(2, 6)}`,
+        score: base + Math.floor(Math.random() * 100) - 50,
+        accuracy: 85 + Math.floor(Math.random() * 15),
+        timestamp: Date.now() - Math.floor(Math.random() * 86400000),
+      });
     }
   }
 

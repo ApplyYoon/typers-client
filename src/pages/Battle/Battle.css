@@ -6,20 +6,146 @@
 
 /* ===== School Select ===== */
 .school-select {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   min-height: calc(100vh - 56px);
   padding: 40px 24px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
 }
 
-.school-select-inner {
+.school-select-layout {
   width: 100%;
-  max-width: 680px;
+  max-width: 1100px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+.school-select-form {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
+  gap: 20px;
+}
+
+/* ── 랭킹 패널 ── */
+.school-ranking-panel {
+  background: #fff;
+  border-radius: 24px;
+  padding: 28px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  position: sticky;
+  top: 80px;
+}
+
+.ranking-panel-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--gray-800);
+  margin-bottom: 20px;
+}
+
+.ranking-panel-empty {
+  font-size: 14px;
+  color: var(--gray-400);
+  text-align: center;
+  padding: 24px 0;
+}
+
+.ranking-panel-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ranking-panel-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  background: var(--gray-100);
+  transition: background 0.15s;
+}
+
+.ranking-panel-row.mine {
+  background: var(--purple-bg);
+  border-width: 2px;
+}
+
+.ranking-panel-pos {
+  width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ranking-panel-crown {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.15));
+}
+
+.ranking-panel-rank-num {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gray-500, #6b7280);
+}
+
+.ranking-panel-color {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ranking-panel-name {
+  width: 64px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-700, #374151);
+  flex-shrink: 0;
+}
+
+.ranking-panel-bar-wrap {
+  flex: 1;
+  height: 7px;
+  background: var(--gray-200);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.ranking-panel-bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+
+.ranking-panel-score {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gray-800);
+  width: 72px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.ranking-panel-score small {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--gray-400);
+}
+
+.ranking-panel-count {
+  font-size: 11px;
+  color: var(--gray-400);
+  width: 28px;
+  text-align: right;
+  flex-shrink: 0;
 }
 
 .battle-logo {
