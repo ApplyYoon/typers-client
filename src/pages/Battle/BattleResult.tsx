@@ -92,21 +92,13 @@ const BattleResult: React.FC<Props> = ({
                   style={isMine ? { borderColor: myColor } : {}}
                 >
                   <span className="school-rank-pos">{getRankDisplay(idx + 1)}</span>
-                  <div className="school-rank-color" style={{ background: color }} />
-                  <span className="school-rank-name" title={stat.schoolName}>{stat.schoolName}</span>
-                  <div className="school-rank-bar-wrap">
-                    <div
-                      className="school-rank-bar"
-                      style={{
-                        width: `${Math.min((stat.avgScore / (stats[0]?.avgScore || 1)) * 100, 100)}%`,
-                        background: color,
-                      }}
-                    />
+                  <div className="school-rank-info">
+                    <span className="school-rank-school">{stat.schoolName}</span>
+                    <span className="school-rank-nick">{stat.topUsername}</span>
                   </div>
                   <span className="school-rank-score">
                     {stat.avgScore.toLocaleString()} <small>CPM</small>
                   </span>
-                  <span className="school-rank-count">{stat.count}명</span>
                 </div>
               );
             })}

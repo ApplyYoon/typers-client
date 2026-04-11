@@ -170,12 +170,9 @@ const SchoolSelect: React.FC<Props> = ({ onConfirm }) => {
           ) : (
             <div className="ranking-panel-list">
               {stats.map((stat, idx) => {
-                const rank     = idx + 1;
-                const isMine   = stat.schoolId === schoolId;
-                // schoolId가 NEIS 코드이므로 색상은 코드로 결정
-                // 학교명은 stat에 없으므로 코드에서 알 수 없으나 name이 있다면 사용
-                const color    = schoolColor(stat.schoolId);
-                const name     = stat.schoolName ?? stat.schoolId;
+                const rank   = idx + 1;
+                const isMine = stat.schoolId === schoolId;
+                const color  = schoolColor(stat.schoolId);
                 return (
                   <div
                     key={stat.schoolId}
@@ -188,21 +185,13 @@ const SchoolSelect: React.FC<Props> = ({ onConfirm }) => {
                         : <span className="ranking-panel-rank-num">{rank}</span>
                       }
                     </div>
-                    <div className="ranking-panel-color" style={{ background: color }} />
-                    <span className="ranking-panel-name" title={name}>{name}</span>
-                    <div className="ranking-panel-bar-wrap">
-                      <div
-                        className="ranking-panel-bar"
-                        style={{
-                          width: `${Math.min((stat.avgScore / (stats[0]?.avgScore || 1)) * 100, 100)}%`,
-                          background: color,
-                        }}
-                      />
+                    <div className="ranking-panel-info">
+                      <span className="ranking-panel-school">{stat.schoolName}</span>
+                      <span className="ranking-panel-nick">{stat.topUsername}</span>
                     </div>
                     <span className="ranking-panel-score">
                       {stat.avgScore.toLocaleString()} <small>CPM</small>
                     </span>
-                    <span className="ranking-panel-count">{stat.count}명</span>
                   </div>
                 );
               })}

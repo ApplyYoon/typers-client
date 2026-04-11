@@ -1,8 +1,8 @@
 export interface BattleRecord {
-  schoolId: string;    // NEIS 학교코드
-  schoolName: string;  // 학교명
+  schoolId: string;
+  schoolName: string;
   username: string;
-  score: number;       // CPM
+  score: number; // CPM
   accuracy: number;
   timestamp: number;
 }
@@ -10,12 +10,13 @@ export interface BattleRecord {
 export interface SchoolStat {
   schoolId: string;
   schoolName: string;
+  topUsername: string; // 최고 점수 기록자 닉네임
   avgScore: number;
   topScore: number;
   count: number;
 }
 
-const KEY = 'typers_battle_records';
+const KEY = 'typers_battle_records_v2';
 
 export function saveRecord(record: BattleRecord): void {
   const records = getRecords();
@@ -33,21 +34,26 @@ export function getRecords(): BattleRecord[] {
 
 export function getSchoolStats(): SchoolStat[] {
   const records = getRecords();
-  const map = new Map<string, { scores: number[]; name: string }>();
+  const map = new Map<string, { records: BattleRecord[] }>();
 
   for (const r of records) {
-    if (!map.has(r.schoolId)) map.set(r.schoolId, { scores: [], name: r.schoolName });
-    map.get(r.schoolId)!.scores.push(r.score);
+    if (!map.has(r.schoolId)) map.set(r.schoolId, { records: [] });
+    map.get(r.schoolId)!.records.push(r);
   }
 
   return Array.from(map.entries())
-    .map(([schoolId, { scores, name }]) => ({
-      schoolId,
-      schoolName: name,
-      avgScore: Math.round(scores.reduce((a, b) => a + b, 0) / scores.length),
-      topScore: Math.max(...scores),
-      count: scores.length,
-    }))
+    .map(([schoolId, { records: recs }]) => {
+      const best = recs.reduce((a, b) => (a.score >= b.score ? a : b));
+      const avgScore = Math.round(recs.reduce((a, b) => a + b.score, 0) / recs.length);
+      return {
+        schoolId,
+        schoolName:  best.schoolName,
+        topUsername: best.username,
+        avgScore,
+        topScore:    best.score,
+        count:       recs.length,
+      };
+    })
     .sort((a, b) => b.avgScore - a.avgScore);
 }
 
