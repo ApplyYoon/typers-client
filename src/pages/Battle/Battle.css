@@ -534,6 +534,16 @@
   width: 32px;
   font-size: 15px;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rank-crown-img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 4px rgba(0,0,0,0.15));
 }
 
 .school-rank-color {

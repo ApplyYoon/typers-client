@@ -27,11 +27,17 @@ const BattleResult: React.FC<Props> = ({
   const myRank = stats.findIndex((s) => s.schoolId === schoolId) + 1;
   const scoreLabel = lang === 'ko' ? '타/분' : 'WPM';
 
-  const getRankEmoji = (rank: number) => {
-    if (rank === 1) return '🥇';
-    if (rank === 2) return '🥈';
-    if (rank === 3) return '🥉';
-    return `${rank}위`;
+  const RANK_IMAGES: Record<number, string> = {
+    1: '/rank_gold.png',
+    2: '/rank_silver.png',
+    3: '/rank_bronze.png',
+  };
+
+  const getRankDisplay = (rank: number) => {
+    if (rank <= 3) {
+      return <img src={RANK_IMAGES[rank]} alt={`${rank}위`} className="rank-crown-img" />;
+    }
+    return <span>{rank}위</span>;
   };
 
   const getScoreComment = (s: number) => {
@@ -78,7 +84,7 @@ const BattleResult: React.FC<Props> = ({
             <div className="result-sub-stat">
               <span className="result-sub-label">학교 순위</span>
               <span className="result-sub-value">
-                {myRank > 0 ? getRankEmoji(myRank) : '-'}
+                {myRank > 0 ? getRankDisplay(myRank) : '-'}
               </span>
             </div>
             <div className="result-sub-stat">
@@ -105,7 +111,7 @@ const BattleResult: React.FC<Props> = ({
                   className={`school-rank-row ${isMine ? 'mine' : ''}`}
                   style={isMine ? { borderColor: mySchool?.color } : {}}
                 >
-                  <span className="school-rank-pos">{getRankEmoji(idx + 1)}</span>
+                  <span className="school-rank-pos">{getRankDisplay(idx + 1)}</span>
                   <div
                     className="school-rank-color"
                     style={{ background: school?.color ?? '#ccc' }}

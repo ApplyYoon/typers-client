@@ -44,6 +44,9 @@ const Ranking: React.FC = () => {
         <div className="podium">
           {/* 2nd place */}
           <div className="podium-item podium-2nd">
+            <div className="podium-crown">
+              <img src="/rank_silver.png" alt="2nd" className="podium-crown-img" />
+            </div>
             <div
               className="podium-avatar"
               style={{ background: AVATAR_COLORS[1] }}
@@ -58,7 +61,9 @@ const Ranking: React.FC = () => {
 
           {/* 1st place */}
           <div className="podium-item podium-1st">
-            <div className="podium-crown">👑</div>
+            <div className="podium-crown">
+              <img src="/rank_gold.png" alt="1st" className="podium-crown-img" />
+            </div>
             <div
               className="podium-avatar podium-avatar-large"
               style={{ background: AVATAR_COLORS[0] }}
@@ -73,6 +78,9 @@ const Ranking: React.FC = () => {
 
           {/* 3rd place */}
           <div className="podium-item podium-3rd">
+            <div className="podium-crown">
+              <img src="/rank_bronze.png" alt="3rd" className="podium-crown-img" />
+            </div>
             <div
               className="podium-avatar"
               style={{ background: AVATAR_COLORS[2] }}
