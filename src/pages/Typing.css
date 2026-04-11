@@ -161,7 +161,9 @@
 }
 
 .typing-mascot {
-  font-size: 64px;
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
   animation: bounce 2s ease-in-out infinite;
 }
 

@@ -146,7 +146,9 @@
 }
 
 .battle-logo-emoji {
-  font-size: 64px;
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
   display: block;
   margin-bottom: 8px;
   filter: drop-shadow(0 4px 16px rgba(124,58,237,0.3));
@@ -415,7 +417,9 @@
 }
 
 .arena-logo {
-  font-size: 80px;
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
   animation: float 2s ease-in-out infinite;
 }
 
@@ -650,7 +654,9 @@
 }
 
 .result-mascot {
-  font-size: 72px;
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
   animation: float 3s ease-in-out infinite;
 }
 

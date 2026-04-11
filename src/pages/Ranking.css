@@ -69,11 +69,14 @@
 }
 
 .podium-emoji {
-  font-size: 32px;
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
 }
 
 .podium-avatar-large .podium-emoji {
-  font-size: 42px;
+  width: 48px;
+  height: 48px;
 }
 
 .podium-name {
@@ -176,10 +179,8 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
+  object-fit: contain;
   background: var(--purple-bg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   font-size: 18px;
 }
 

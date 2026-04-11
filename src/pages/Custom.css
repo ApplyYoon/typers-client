@@ -216,7 +216,9 @@
 }
 
 .stats-mascot-emoji {
-  font-size: 52px;
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
 }
 
 .stats-speech-bubble {
