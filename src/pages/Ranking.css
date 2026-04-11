@@ -1,0 +1,215 @@
+.ranking-page {
+  min-height: calc(100vh - 56px);
+  background: var(--gray-100);
+  padding: 32px 24px;
+}
+
+.ranking-container {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.ranking-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.ranking-subtitle {
+  font-size: 14px;
+  color: var(--gray-600);
+}
+
+.ranking-date {
+  font-size: 13px;
+  color: var(--gray-400);
+}
+
+/* Podium */
+.podium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 40px;
+}
+
+.podium-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.podium-crown {
+  font-size: 24px;
+  margin-bottom: 2px;
+}
+
+.podium-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(124,58,237,0.25);
+}
+
+.podium-avatar-large {
+  width: 88px;
+  height: 88px;
+}
+
+.podium-emoji {
+  font-size: 32px;
+}
+
+.podium-avatar-large .podium-emoji {
+  font-size: 42px;
+}
+
+.podium-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-700, #374151);
+}
+
+.podium-block {
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+}
+
+.podium-block-1st {
+  height: 80px;
+  background: linear-gradient(180deg, var(--purple-primary) 0%, var(--purple-dark) 100%);
+}
+
+.podium-block-2nd {
+  height: 60px;
+  background: linear-gradient(180deg, var(--purple-light) 0%, var(--purple-primary) 100%);
+}
+
+.podium-block-3rd {
+  height: 44px;
+  background: linear-gradient(180deg, var(--purple-lighter) 0%, var(--purple-light) 100%);
+}
+
+.podium-rank-num {
+  font-size: 22px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.9);
+}
+
+/* Rank list */
+.rank-list-section {
+  background: #fff;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+
+.rank-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.rank-tab {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--gray-100);
+  color: var(--gray-600);
+  transition: all 0.2s;
+}
+
+.rank-tab.active {
+  background: var(--purple-primary);
+  color: #fff;
+}
+
+.rank-tab:hover:not(.active) {
+  background: var(--purple-bg);
+  color: var(--purple-primary);
+}
+
+.rank-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rank-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 8px;
+  border-radius: 10px;
+  gap: 12px;
+  transition: background 0.15s;
+}
+
+.rank-row:hover {
+  background: var(--gray-100);
+}
+
+.rank-num {
+  width: 28px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--purple-primary);
+  text-align: center;
+}
+
+.rank-avatar-small {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--purple-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.rank-username {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.rank-score {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rank-wpm-icon {
+  font-size: 14px;
+}
+
+.rank-wpm {
+  font-size: 13px;
+  color: var(--gray-600);
+}
+
+.rank-up-btn {
+  background: var(--purple-bg);
+  color: var(--purple-primary);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 700;
+  transition: background 0.15s;
+}
+
+.rank-up-btn:hover {
+  background: var(--purple-lighter);
+}
