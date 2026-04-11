@@ -108,7 +108,7 @@ const Custom: React.FC = () => {
               ))}
             </div>
             <div className="custom-stats-mascot">
-              <span className="stats-mascot-emoji">🍇</span>
+              <img src="/logo_nbg.png" alt="logo" className="stats-mascot-emoji" />
               <div className="stats-speech-bubble">
                 <p>와, 열심 먹으려<br />Ppodoomii83!</p>
               </div>

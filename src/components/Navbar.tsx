@@ -67,7 +67,7 @@ const Navbar: React.FC = () => {
             <span>📢</span>
           </button>
           <Link to="/profile" className="navbar-user">
-            <span className="navbar-avatar">🍇</span>
+            <img src="/logo_nbg.png" alt="logo" className="navbar-avatar" />
             <span className="navbar-username">1KO</span>
           </Link>
         </div>

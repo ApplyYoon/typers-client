@@ -203,7 +203,7 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
   if (!started) {
     return (
       <div className="arena-countdown-overlay">
-        <div className="arena-logo">🍇</div>
+        <img src="/logo_nbg.png" alt="logo" className="arena-logo" />
         <div className="countdown-number">{countdown === 0 ? 'GO!' : countdown}</div>
         <p className="countdown-sub">
           {lang === 'mixed'

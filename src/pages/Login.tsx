@@ -19,7 +19,7 @@ const Login: React.FC = () => {
           <div className="auth-panel-blob blob1" />
           <div className="auth-panel-blob blob2" />
           <div className="auth-panel-content">
-            <div className="auth-mascot">🍇</div>
+            <img src="/logo_nbg.png" alt="logo" className="auth-mascot" />
             <h2 className="auth-panel-title">Welcome Back</h2>
             <p className="auth-panel-sub">돌아오신 걸 환영합니다.</p>
           </div>

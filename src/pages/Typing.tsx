@@ -113,7 +113,7 @@ const Typing: React.FC = () => {
         </div>
 
         <div className="typing-mascot-area">
-          <span className="typing-mascot">🍇</span>
+          <img src="/logo_nbg.png" alt="logo" className="typing-mascot" />
           <p className="typing-mascot-msg">화이팅!</p>
         </div>
       </div>

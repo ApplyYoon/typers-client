@@ -51,7 +51,7 @@ const BattleResult: React.FC<Props> = ({
       <div className="result-container">
         {/* My score card */}
         <div className="result-score-card">
-          <div className="result-mascot">🍇</div>
+          <img src="/logo_nbg.png" alt="logo" className="result-mascot" />
           <h2 className="result-username">{username}</h2>
           <div className="result-school-badge" style={{ background: myColor }}>
             {schoolName}

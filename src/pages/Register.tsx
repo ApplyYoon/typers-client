@@ -76,7 +76,7 @@ const Register: React.FC = () => {
           <div className="auth-panel-blob blob1" />
           <div className="auth-panel-blob blob2" />
           <div className="auth-panel-content">
-            <div className="auth-mascot">🍇</div>
+            <img src="/logo_nbg.png" alt="logo" className="auth-mascot" />
             <h2 className="auth-panel-title">Welcome to Typers</h2>
             <p className="auth-panel-sub">타이퍼즈에 함께해서 사이드 사합니다.</p>
           </div>

@@ -71,7 +71,7 @@ const SchoolSelect: React.FC<Props> = ({ onConfirm }) => {
         {/* ── 왼쪽: 배틀 참가 폼 ── */}
         <div className="school-select-form">
           <div className="battle-logo">
-            <span className="battle-logo-emoji">🍇</span>
+            <img src="/logo_nbg.png" alt="logo" className="battle-logo-emoji" />
             <h1 className="battle-logo-title">학교 대항전</h1>
             <p className="battle-logo-sub">한국어 40초 · 영어 20초 · CPM 측정</p>
           </div>

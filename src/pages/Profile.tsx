@@ -70,7 +70,7 @@ const Profile: React.FC = () => {
         <div className="profile-header-card">
           <div className="profile-mascot-wrap">
             <div className="profile-mascot-bg" />
-            <span className="profile-mascot">🍇</span>
+            <img src="/logo_nbg.png" alt="logo" className="profile-mascot" />
           </div>
           <div className="profile-info">
             <h2 className="profile-username">Ppodoomii83</h2>
@@ -88,7 +88,7 @@ const Profile: React.FC = () => {
           {/* Grape grid */}
           <div className="grape-grid">
             {Array.from({ length: 11 }).map((_, i) => (
-              <span key={i} className="grape-item">🍇</span>
+              <img key={i} src="/logo_nbg.png" alt="logo" className="grape-item" />
             ))}
           </div>
         </div>
@@ -186,7 +186,7 @@ const Profile: React.FC = () => {
             </ResponsiveContainer>
 
             <div className="monthly-mascot">
-              <span className="monthly-mascot-emoji">🍇</span>
+              <img src="/logo_nbg.png" alt="logo" className="monthly-mascot-emoji" />
               <div className="monthly-speech-bubble">
                 <p>와, 열심 먹으려<br />Ppodoomii83!</p>
               </div>

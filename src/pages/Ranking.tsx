@@ -51,7 +51,7 @@ const Ranking: React.FC = () => {
               className="podium-avatar"
               style={{ background: AVATAR_COLORS[1] }}
             >
-              <span className="podium-emoji">🍇</span>
+              <img src="/logo_nbg.png" alt="logo" className="podium-emoji" />
             </div>
             <p className="podium-name">{top3[1]?.username}</p>
             <div className="podium-block podium-block-2nd">
@@ -68,7 +68,7 @@ const Ranking: React.FC = () => {
               className="podium-avatar podium-avatar-large"
               style={{ background: AVATAR_COLORS[0] }}
             >
-              <span className="podium-emoji">🍇</span>
+              <img src="/logo_nbg.png" alt="logo" className="podium-emoji" />
             </div>
             <p className="podium-name">{top3[0]?.username}</p>
             <div className="podium-block podium-block-1st">
@@ -112,7 +112,7 @@ const Ranking: React.FC = () => {
             {rest.map((user) => (
               <div key={user.rank} className="rank-row">
                 <span className="rank-num">{user.rank}</span>
-                <div className="rank-avatar-small">🍇</div>
+                <img src="/logo_nbg.png" alt="logo" className="rank-avatar-small" />
                 <span className="rank-username">{user.username}</span>
                 <div className="rank-score">
                   <span className="rank-wpm-icon">💜</span>
