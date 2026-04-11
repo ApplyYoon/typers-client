@@ -1,9 +1,10 @@
 import React from 'react';
-import { SCHOOLS } from '../../data/schools';
 import { getSchoolStats } from '../../utils/battleStorage';
+import { schoolColor } from '../../utils/schoolApi';
 
 interface Props {
   schoolId: string;
+  schoolName: string;
   username: string;
   score: number;
   accuracy: number;
@@ -34,15 +35,16 @@ const getScoreComment = (s: number) => {
 
 const BattleResult: React.FC<Props> = ({
   schoolId,
+  schoolName,
   username,
   score,
   accuracy,
   onRetry,
   onChangeSchool,
 }) => {
-  const stats = getSchoolStats();
-  const mySchool = SCHOOLS.find((s) => s.id === schoolId);
+  const stats  = getSchoolStats();
   const myRank = stats.findIndex((s) => s.schoolId === schoolId) + 1;
+  const myColor = schoolColor(schoolId);
 
   return (
     <div className="result-page">
@@ -51,11 +53,8 @@ const BattleResult: React.FC<Props> = ({
         <div className="result-score-card">
           <div className="result-mascot">🍇</div>
           <h2 className="result-username">{username}</h2>
-          <div
-            className="result-school-badge"
-            style={{ background: mySchool?.color ?? '#7c3aed' }}
-          >
-            {mySchool?.emoji} {mySchool?.shortName}
+          <div className="result-school-badge" style={{ background: myColor }}>
+            {schoolName}
           </div>
 
           <div className="result-main-score">
@@ -84,23 +83,23 @@ const BattleResult: React.FC<Props> = ({
 
           <div className="school-ranking-list">
             {stats.slice(0, 8).map((stat, idx) => {
-              const school = SCHOOLS.find((s) => s.id === stat.schoolId);
               const isMine = stat.schoolId === schoolId;
+              const color  = schoolColor(stat.schoolId);
               return (
                 <div
                   key={stat.schoolId}
                   className={`school-rank-row ${isMine ? 'mine' : ''}`}
-                  style={isMine ? { borderColor: mySchool?.color } : {}}
+                  style={isMine ? { borderColor: myColor } : {}}
                 >
                   <span className="school-rank-pos">{getRankDisplay(idx + 1)}</span>
-                  <div className="school-rank-color" style={{ background: school?.color ?? '#ccc' }} />
-                  <span className="school-rank-name">{school?.shortName ?? stat.schoolId}</span>
+                  <div className="school-rank-color" style={{ background: color }} />
+                  <span className="school-rank-name" title={stat.schoolName}>{stat.schoolName}</span>
                   <div className="school-rank-bar-wrap">
                     <div
                       className="school-rank-bar"
                       style={{
                         width: `${Math.min((stat.avgScore / (stats[0]?.avgScore || 1)) * 100, 100)}%`,
-                        background: school?.color ?? '#7c3aed',
+                        background: color,
                       }}
                     />
                   </div>

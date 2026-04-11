@@ -1,9 +1,16 @@
-import React, { useState } from 'react';
-import { SCHOOLS } from '../../data/schools';
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  SCHOOL_TYPES,
+  searchSchools,
+  schoolColor,
+  type SchoolType,
+  type NeisSchool,
+} from '../../utils/schoolApi';
 import { getSchoolStats } from '../../utils/battleStorage';
+import { SCHOOLS } from '../../data/schools';
 
 interface Props {
-  onConfirm: (schoolId: string, username: string) => void;
+  onConfirm: (schoolId: string, username: string, schoolName: string) => void;
 }
 
 const RANK_IMAGES: Record<number, string> = {
@@ -13,15 +20,54 @@ const RANK_IMAGES: Record<number, string> = {
 };
 
 const SchoolSelect: React.FC<Props> = ({ onConfirm }) => {
-  const [selectedSchool, setSelectedSchool] = useState<string>('');
-  const [username, setUsername] = useState('');
+  const [username, setUsername]           = useState('');
+  const [schoolType, setSchoolType]       = useState<SchoolType>('고등학교');
+  const [query, setQuery]                 = useState('');
+  const [results, setResults]             = useState<NeisSchool[]>([]);
+  const [selected, setSelected]           = useState<NeisSchool | null>(null);
+  const [loading, setLoading]             = useState(false);
+  const [showDropdown, setShowDropdown]   = useState(false);
 
-  const canProceed = selectedSchool && username.trim().length > 0;
-  const stats = getSchoolStats();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inputRef    = useRef<HTMLInputElement>(null);
+  const stats       = getSchoolStats();
+
+  useEffect(() => {
+    if (query.length < 1) { setResults([]); setShowDropdown(false); return; }
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      setLoading(true);
+      const data = await searchSchools(query, schoolType);
+      setResults(data);
+      setShowDropdown(true);
+      setLoading(false);
+    }, 350);
+
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [query, schoolType]);
+
+  const handleSelect = (school: NeisSchool) => {
+    setSelected(school);
+    setQuery(school.SCHUL_NM);
+    setShowDropdown(false);
+  };
+
+  const handleTypeChange = (type: SchoolType) => {
+    setSchoolType(type);
+    setSelected(null);
+    setQuery('');
+    setResults([]);
+    setShowDropdown(false);
+  };
+
+  const canProceed = selected && username.trim().length > 0;
+  const schoolId   = selected?.SD_SCHUL_CODE ?? '';
 
   return (
     <div className="school-select">
       <div className="school-select-layout">
+
         {/* ── 왼쪽: 배틀 참가 폼 ── */}
         <div className="school-select-form">
           <div className="battle-logo">
@@ -30,7 +76,8 @@ const SchoolSelect: React.FC<Props> = ({ onConfirm }) => {
             <p className="battle-logo-sub">한국어 40초 · 영어 15초 · CPM 측정</p>
           </div>
 
-          <div className="username-section">
+          {/* 닉네임 */}
+          <div className="username-section" style={{ width: '100%' }}>
             <input
               className="username-input"
               type="text"
@@ -41,29 +88,74 @@ const SchoolSelect: React.FC<Props> = ({ onConfirm }) => {
             />
           </div>
 
-          <p className="school-section-label">학교를 선택하세요</p>
-          <div className="school-grid">
-            {SCHOOLS.map((school) => (
+          {/* 학교 종류 탭 */}
+          <div className="school-type-tabs">
+            {SCHOOL_TYPES.map((type) => (
               <button
-                key={school.id}
-                className={`school-card ${selectedSchool === school.id ? 'selected' : ''}`}
-                onClick={() => setSelectedSchool(school.id)}
-                style={
-                  selectedSchool === school.id
-                    ? { borderColor: school.color, background: school.color + '18' }
-                    : {}
-                }
+                key={type}
+                className={`school-type-tab ${schoolType === type ? 'active' : ''}`}
+                onClick={() => handleTypeChange(type)}
               >
-                <span className="school-emoji">{school.emoji}</span>
-                <span className="school-short">{school.shortName}</span>
+                {type}
               </button>
             ))}
           </div>
 
+          {/* 학교 검색 */}
+          <div className="school-search-wrap" style={{ width: '100%' }}>
+            <div className="school-search-input-row">
+              <input
+                ref={inputRef}
+                className="school-search-input"
+                type="text"
+                placeholder={`${schoolType} 이름을 검색하세요`}
+                value={query}
+                onChange={(e) => { setQuery(e.target.value); setSelected(null); }}
+                onFocus={() => results.length > 0 && setShowDropdown(true)}
+                autoComplete="off"
+              />
+              {loading && <span className="school-search-spinner" />}
+            </div>
+
+            {showDropdown && results.length > 0 && (
+              <ul className="school-dropdown">
+                {results.map((school) => (
+                  <li
+                    key={school.SD_SCHUL_CODE}
+                    className="school-dropdown-item"
+                    onMouseDown={() => handleSelect(school)}
+                  >
+                    <div className="school-dropdown-name">{school.SCHUL_NM}</div>
+                    <div className="school-dropdown-meta">
+                      {school.LCTN_SC_NM} · {school.SCHUL_KND_SC_NM}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {showDropdown && !loading && results.length === 0 && query.length > 0 && (
+              <div className="school-dropdown school-dropdown-empty">검색 결과가 없습니다</div>
+            )}
+          </div>
+
+          {/* 선택된 학교 뱃지 */}
+          {selected && (
+            <div
+              className="selected-school-badge"
+              style={{ background: schoolColor(selected.SD_SCHUL_CODE) }}
+            >
+              <span>{selected.SCHUL_NM}</span>
+              <span className="selected-school-type">{selected.SCHUL_KND_SC_NM}</span>
+            </div>
+          )}
+
           <button
             className="start-btn"
             disabled={!canProceed}
-            onClick={() => canProceed && onConfirm(selectedSchool, username.trim())}
+            onClick={() =>
+              canProceed && onConfirm(schoolId, username.trim(), selected!.SCHUL_NM)
+            }
           >
             배틀 시작
           </button>
@@ -74,18 +166,21 @@ const SchoolSelect: React.FC<Props> = ({ onConfirm }) => {
           <h2 className="ranking-panel-title">학교 랭킹</h2>
 
           {stats.length === 0 ? (
-            <p className="ranking-panel-empty">아직 기록이 없습니다.</p>
+            <p className="ranking-panel-empty">아직 기록이 없습니다.<br />첫 번째 도전자가 되세요!</p>
           ) : (
             <div className="ranking-panel-list">
               {stats.map((stat, idx) => {
-                const school = SCHOOLS.find((s) => s.id === stat.schoolId);
-                const rank = idx + 1;
-                const isMine = stat.schoolId === selectedSchool;
+                const rank     = idx + 1;
+                const isMine   = stat.schoolId === schoolId;
+                // schoolId가 NEIS 코드이므로 색상은 코드로 결정
+                // 학교명은 stat에 없으므로 코드에서 알 수 없으나 name이 있다면 사용
+                const color    = schoolColor(stat.schoolId);
+                const name     = stat.schoolName ?? stat.schoolId;
                 return (
                   <div
                     key={stat.schoolId}
                     className={`ranking-panel-row ${isMine ? 'mine' : ''}`}
-                    style={isMine ? { borderColor: school?.color } : {}}
+                    style={isMine ? { borderColor: color } : {}}
                   >
                     <div className="ranking-panel-pos">
                       {rank <= 3
@@ -93,18 +188,20 @@ const SchoolSelect: React.FC<Props> = ({ onConfirm }) => {
                         : <span className="ranking-panel-rank-num">{rank}</span>
                       }
                     </div>
-                    <div className="ranking-panel-color" style={{ background: school?.color ?? '#ccc' }} />
-                    <span className="ranking-panel-name">{school?.shortName ?? stat.schoolId}</span>
+                    <div className="ranking-panel-color" style={{ background: color }} />
+                    <span className="ranking-panel-name" title={name}>{name}</span>
                     <div className="ranking-panel-bar-wrap">
                       <div
                         className="ranking-panel-bar"
                         style={{
                           width: `${Math.min((stat.avgScore / (stats[0]?.avgScore || 1)) * 100, 100)}%`,
-                          background: school?.color ?? '#7c3aed',
+                          background: color,
                         }}
                       />
                     </div>
-                    <span className="ranking-panel-score">{stat.avgScore.toLocaleString()} <small>CPM</small></span>
+                    <span className="ranking-panel-score">
+                      {stat.avgScore.toLocaleString()} <small>CPM</small>
+                    </span>
                     <span className="ranking-panel-count">{stat.count}명</span>
                   </div>
                 );
@@ -112,6 +209,7 @@ const SchoolSelect: React.FC<Props> = ({ onConfirm }) => {
             </div>
           )}
         </div>
+
       </div>
     </div>
   );

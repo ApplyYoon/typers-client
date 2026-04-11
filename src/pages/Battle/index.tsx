@@ -2,41 +2,42 @@ import React, { useState } from 'react';
 import SchoolSelect from './SchoolSelect';
 import BattleArena from './BattleArena';
 import BattleResult from './BattleResult';
-import { saveRecord, seedDemoData } from '../../utils/battleStorage';
+import { saveRecord } from '../../utils/battleStorage';
 import './Battle.css';
 
 type Step = 'select' | 'arena' | 'result';
 
 interface BattleState {
   schoolId: string;
+  schoolName: string;
   username: string;
   score: number;
   accuracy: number;
 }
 
-seedDemoData();
-
 const Battle: React.FC = () => {
   const [step, setStep] = useState<Step>('select');
   const [state, setState] = useState<BattleState>({
     schoolId: '',
+    schoolName: '',
     username: '',
     score: 0,
     accuracy: 0,
   });
 
-  const handleConfirmSelect = (schoolId: string, username: string) => {
-    setState((s) => ({ ...s, schoolId, username }));
+  const handleConfirmSelect = (schoolId: string, username: string, schoolName: string) => {
+    setState((s) => ({ ...s, schoolId, schoolName, username }));
     setStep('arena');
   };
 
   const handleFinish = (score: number, accuracy: number) => {
     saveRecord({
-      schoolId: state.schoolId,
-      username: state.username,
+      schoolId:   state.schoolId,
+      schoolName: state.schoolName,
+      username:   state.username,
       score,
       accuracy,
-      timestamp: Date.now(),
+      timestamp:  Date.now(),
     });
     setState((s) => ({ ...s, score, accuracy }));
     setStep('result');
@@ -57,6 +58,7 @@ const Battle: React.FC = () => {
       {step === 'result' && (
         <BattleResult
           schoolId={state.schoolId}
+          schoolName={state.schoolName}
           username={state.username}
           score={state.score}
           accuracy={state.accuracy}
