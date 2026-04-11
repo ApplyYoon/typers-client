@@ -297,17 +297,17 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
         <img src={charSrc} alt="character" className="arena-character-img" />
       </div>
 
-      {/* 목표 문장 */}
-      <div className="arena-text">
+      {/* 목표 문장 — 클릭 시 숨겨진 input 포커스 */}
+      <div className="arena-text" onClick={() => inputRef.current?.focus()}>
         {text.split('').map((char, i) => (
           <span key={i} className={`char-${charDisplay[i]}`}>{char}</span>
         ))}
       </div>
 
-      {/* 입력창 */}
+      {/* 숨겨진 입력창 — 키 캡처 전용 */}
       <input
         ref={inputRef}
-        className="arena-input"
+        className="arena-input-hidden"
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         onCompositionStart={handleCompositionStart}
@@ -316,7 +316,6 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
         autoCorrect="off"
         autoCapitalize="off"
         spellCheck={false}
-        placeholder={phase === 'korean' ? '여기에 타이핑하세요' : 'Type here...'}
       />
     </div>
   );

@@ -517,22 +517,25 @@
   background: #fff;
   border-radius: 20px;
   padding: 32px;
-  font-size: 20px;
-  line-height: 2;
-  letter-spacing: 0.04em;
+  font-size: 22px;
+  line-height: 2.2;
+  letter-spacing: 0.05em;
+  cursor: text;
+  user-select: none;
   box-shadow: 0 4px 20px rgba(0,0,0,0.06);
   word-break: break-all;
   overflow-wrap: break-word;
   white-space: pre-wrap;
 }
 
-.char-pending { color: #9ca3af; }
-.char-correct { color: #7c3aed; }
+.char-pending { color: #d1d5db; }
+.char-correct { color: #7c3aed; font-weight: 500; }
 .char-wrong   { color: #ef4444; background: #fee2e2; border-radius: 3px; }
 .char-cursor  {
-  color: #9ca3af;
-  border-left: 3px solid #7c3aed;
+  color: #d1d5db;
+  border-left: 2.5px solid #7c3aed;
   animation: blink 0.9s step-end infinite;
+  margin-left: 1px;
 }
 
 @keyframes blink {
@@ -607,21 +610,13 @@
   word-break: break-all;
 }
 
-/* Input */
-.arena-input {
-  width: 100%;
-  padding: 16px 24px;
-  border: 2px solid var(--gray-200);
-  border-radius: 16px;
-  font-size: 18px;
-  background: #fff;
-  transition: border-color 0.2s;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-}
-
-.arena-input:focus {
-  border-color: var(--purple-light);
-  outline: none;
+/* Hidden input — key capture only */
+.arena-input-hidden {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
 }
 
 .arena-hint {
