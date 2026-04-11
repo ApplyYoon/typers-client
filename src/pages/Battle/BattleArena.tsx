@@ -133,7 +133,6 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
         return;
       }
       countAndStore(newVal, prevVal.length, currentText);
-      setFrame((f) => (f === 1 ? 2 : 1));
     }
 
     if (newVal === currentText) {
@@ -151,6 +150,14 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
     commit(e.target.value, inputValue);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!started) return;
+    // 실제 문자 입력 키에만 반응 (수식어·방향키·기능키 제외)
+    if (e.key.length === 1 || e.key === 'Process') {
+      setFrame((f) => (f === 1 ? 2 : 1));
+    }
+  };
+
   const handleCompositionStart = () => setIsComposing(true);
 
   const handleCompositionEnd = (e: React.CompositionEvent<HTMLInputElement>) => {
@@ -165,7 +172,6 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
         return;
       }
       countAndStore(newVal, inputValue.length, currentText);
-      setFrame((f) => (f === 1 ? 2 : 1));
     }
 
     if (newVal === currentText) {
@@ -303,6 +309,7 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
         ref={inputRef}
         className="arena-input"
         onChange={handleChange}
+        onKeyDown={handleKeyDown}
         onCompositionStart={handleCompositionStart}
         onCompositionEnd={handleCompositionEnd}
         autoComplete="off"
