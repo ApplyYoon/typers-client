@@ -4,8 +4,8 @@
 }
 
 .custom-header {
-  background: linear-gradient(135deg, var(--purple-primary) 0%, var(--purple-dark) 100%);
-  height: 120px;
+  background: var(--purple-primary);
+  height: 80px;
   position: relative;
 }
 
@@ -76,7 +76,7 @@
 .cursor-option.selected {
   background: var(--purple-bg);
   border-color: var(--purple-primary);
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+  box-shadow: 0 4px 12px rgba(135,88,255,0.15);
 }
 
 .cursor-option-line {

@@ -39,7 +39,6 @@ const CURSOR_OPTIONS: CursorOption[] = [
 
 const Custom: React.FC = () => {
   const [selected, setSelected] = useState<CursorType>('basic');
-  const [loginPrompt, setLoginPrompt] = useState(false);
 
   return (
     <div className="custom-page">

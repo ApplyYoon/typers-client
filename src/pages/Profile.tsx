@@ -120,9 +120,9 @@ const Profile: React.FC = () => {
               <Line
                 type="monotone"
                 dataKey="wpm"
-                stroke="#7c3aed"
+                stroke="#8758FF"
                 strokeWidth={2.5}
-                dot={{ r: 3, fill: '#7c3aed' }}
+                dot={{ r: 3, fill: '#8758FF' }}
                 activeDot={{ r: 5 }}
               />
             </LineChart>
@@ -152,14 +152,14 @@ const Profile: React.FC = () => {
               <YAxis tick={{ fontSize: 11 }} domain={[80, 100]} unit="%" />
               <Tooltip
                 contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                formatter={(v: number) => [`${v}%`, '정확도']}
+                formatter={(v: number | undefined) => v !== undefined ? [`${v}%`, '정확도'] : ['', '']}
               />
               <Line
                 type="monotone"
                 dataKey="accuracy"
-                stroke="#a78bfa"
+                stroke="#03CF5D"
                 strokeWidth={2.5}
-                dot={{ r: 3, fill: '#a78bfa' }}
+                dot={{ r: 3, fill: '#03CF5D' }}
                 activeDot={{ r: 5 }}
               />
             </LineChart>
@@ -180,8 +180,8 @@ const Profile: React.FC = () => {
                 <Tooltip
                   contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                 />
-                <Bar dataKey="wpm" fill="#7c3aed" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="accuracy" fill="#a78bfa" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="wpm" fill="#8758FF" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="accuracy" fill="#03CF5D" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
 

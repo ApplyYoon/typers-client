@@ -60,7 +60,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 16px rgba(124,58,237,0.25);
+  box-shadow: 0 4px 16px rgba(135,88,255,0.2);
 }
 
 .podium-avatar-large {

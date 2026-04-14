@@ -10,19 +10,19 @@ interface RankUser {
 }
 
 const MOCK_RANKS: RankUser[] = [
-  { rank: 1, username: '포도봉', avgWpm: 1100, avatar: '👑🍇', isTop3: true },
-  { rank: 2, username: '알포도', avgWpm: 1050, avatar: '🍇', isTop3: true },
-  { rank: 3, username: '포포', avgWpm: 980, avatar: '🌟', isTop3: true },
-  { rank: 4, username: '포도좋아', avgWpm: 900, avatar: '🍇', isTop3: false },
-  { rank: 5, username: '포도포', avgWpm: 890, avatar: '🍇', isTop3: false },
-  { rank: 6, username: '타이핑왕', avgWpm: 870, avatar: '🍇', isTop3: false },
-  { rank: 7, username: '빠른손', avgWpm: 850, avatar: '🍇', isTop3: false },
-  { rank: 8, username: '포도나무', avgWpm: 820, avatar: '🍇', isTop3: false },
-  { rank: 9, username: '스피드왕', avgWpm: 800, avatar: '🍇', isTop3: false },
-  { rank: 10, username: '포도사랑', avgWpm: 790, avatar: '🍇', isTop3: false },
+  { rank: 1, username: '포도봉', avgWpm: 1100, avatar: '', isTop3: true },
+  { rank: 2, username: '알포도', avgWpm: 1050, avatar: '', isTop3: true },
+  { rank: 3, username: '포포', avgWpm: 980, avatar: '', isTop3: true },
+  { rank: 4, username: '포도좋아', avgWpm: 900, avatar: '', isTop3: false },
+  { rank: 5, username: '포도포', avgWpm: 890, avatar: '', isTop3: false },
+  { rank: 6, username: '타이핑왕', avgWpm: 870, avatar: '', isTop3: false },
+  { rank: 7, username: '빠른손', avgWpm: 850, avatar: '', isTop3: false },
+  { rank: 8, username: '포도나무', avgWpm: 820, avatar: '', isTop3: false },
+  { rank: 9, username: '스피드왕', avgWpm: 800, avatar: '', isTop3: false },
+  { rank: 10, username: '포도사랑', avgWpm: 790, avatar: '', isTop3: false },
 ];
 
-const AVATAR_COLORS = ['#7c3aed', '#a78bfa', '#fbbf24'];
+const AVATAR_COLORS = ['#8758FF', '#6DE701', '#03CF5D'];
 
 const Ranking: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'monthly' | 'all'>('daily');
@@ -36,7 +36,7 @@ const Ranking: React.FC = () => {
     <div className="ranking-page">
       <div className="ranking-container">
         <div className="ranking-header">
-          <p className="ranking-subtitle">9가 명의 유저가 중이요.</p>
+          <p className="ranking-subtitle">현재 9명의 유저가 접속 중입니다.</p>
           <p className="ranking-date">{dateStr}</p>
         </div>
 

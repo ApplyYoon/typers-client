@@ -1,0 +1,369 @@
+/* ─────────────────────────────────────────────────────────
+   LANDING — typewriter-scroll edition
+───────────────────────────────────────────────────────── */
+
+/* ── Typewriter cursor ───────────────────────────────────── */
+.tw-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 0.82em;
+  background: #8758FF;
+  margin-left: 3px;
+  vertical-align: middle;
+  animation: tw-blink 0.72s step-end infinite;
+}
+
+/* After typing is done: cursor stops blinking, then hides */
+.tw-cursor.tw-cursor-end {
+  animation: none;
+  opacity: 1;
+}
+
+@keyframes tw-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* ── Shared buttons ──────────────────────────────────────── */
+.btn-landing-primary {
+  padding: 13px 28px;
+  background: #8758FF;
+  color: #fff;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  transition: background 0.15s, transform 0.15s;
+  white-space: nowrap;
+}
+.btn-landing-primary:hover {
+  background: #6E58FF;
+  transform: translateY(-1px);
+}
+.btn-landing-primary.large { padding: 15px 36px; font-size: 16px; }
+
+.btn-landing-ghost {
+  padding: 13px 28px;
+  background: transparent;
+  color: #1f2937;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  transition: border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.btn-landing-ghost:hover { border-color: #8758FF; color: #8758FF; }
+.btn-landing-ghost.large { padding: 15px 36px; font-size: 16px; }
+
+/* ── Layout wrapper ──────────────────────────────────────── */
+.landing {
+  min-height: 100vh;
+  background: #fff;
+  color: #1f2937;
+  font-family: 'GmarketSans', 'Noto Sans KR', sans-serif;
+}
+
+/* ── Navigation ──────────────────────────────────────────── */
+.landing-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 48px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid #f3f4f6;
+}
+.landing-nav-logo {
+  font-size: 20px;
+  font-weight: 800;
+  color: #8758FF;
+  letter-spacing: -0.02em;
+}
+.landing-nav-actions { display: flex; align-items: center; gap: 10px; }
+.landing-nav-login {
+  padding: 8px 18px;
+  background: transparent;
+  color: #4b5563;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: color 0.15s;
+}
+.landing-nav-login:hover { color: #8758FF; }
+.landing-nav-cta {
+  padding: 8px 18px;
+  background: #8758FF;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+.landing-nav-cta:hover { background: #6E58FF; }
+
+/* ── Hero ────────────────────────────────────────────────── */
+.landing-hero {
+  min-height: calc(100vh - 60px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+}
+
+.hero-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 80px 48px;
+}
+
+/* Main headline: big, bold, types first */
+.hero-h1 {
+  font-size: 64px;
+  font-weight: 800;
+  color: #0f0f0f;
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+  margin-bottom: 28px;
+  min-height: 1.1em;   /* reserve space to prevent layout shift */
+}
+
+/* Subheadline: smaller, lighter, types after h1 */
+.hero-h2 {
+  font-size: 36px;
+  font-weight: 600;
+  color: #6b7280;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+  margin-bottom: 52px;
+  /* two lines reserved */
+  min-height: calc(1.4em * 2);
+}
+
+/* CTA buttons: fade in after h2 finishes */
+.hero-cta {
+  display: flex;
+  gap: 12px;
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+  pointer-events: none;
+}
+.hero-cta.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Scroll hint: animated vertical line at bottom-center */
+.scroll-hint {
+  position: absolute;
+  bottom: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  opacity: 0.35;
+}
+.scroll-hint-bar {
+  display: block;
+  width: 1px;
+  height: 52px;
+  background: #0f0f0f;
+  transform-origin: top;
+  animation: scroll-bar 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+@keyframes scroll-bar {
+  0%   { transform: scaleY(0); transform-origin: top; }
+  45%  { transform: scaleY(1); transform-origin: top; }
+  50%  { transform: scaleY(1); transform-origin: bottom; }
+  100% { transform: scaleY(0); transform-origin: bottom; }
+}
+.scroll-hint-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+/* ── Feature section ─────────────────────────────────────── */
+.landing-features {
+  background: #fafafa;
+  border-top: 1px solid #f3f4f6;
+  border-bottom: 1px solid #f3f4f6;
+  padding: 120px 48px;
+}
+
+.features-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* Big quote that types in on scroll */
+.feature-quote {
+  font-size: 44px;
+  font-weight: 700;
+  color: #0f0f0f;
+  line-height: 1.3;
+  letter-spacing: -0.025em;
+  margin-bottom: 72px;
+  min-height: 1.3em;
+}
+
+/* Feature cards: hidden until quote typing finishes */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.feature-card {
+  background: #fff;
+  border: 1px solid #f3f4f6;
+  border-radius: 12px;
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.45s ease, transform 0.45s ease, box-shadow 0.2s;
+}
+.feature-grid.visible .feature-card {
+  opacity: 1;
+  transform: translateY(0);
+}
+.feature-card:hover {
+  box-shadow: 0 4px 20px rgba(135, 88, 255, 0.1);
+  border-color: #e0d5ff;
+}
+
+.feature-num {
+  font-size: 12px;
+  font-weight: 700;
+  color: #8758FF;
+  letter-spacing: 0.06em;
+}
+.feature-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f0f0f;
+}
+.feature-desc {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.7;
+}
+
+/* ── Stats ───────────────────────────────────────────────── */
+.landing-stats {
+  padding: 80px 48px;
+}
+
+.stats-grid {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 40px 24px;
+  border-right: 1px solid #f3f4f6;
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.stat-item:last-child { border-right: none; }
+.stats-grid.revealed .stat-item { opacity: 1; transform: translateY(0); }
+
+.stat-value {
+  font-size: 44px;
+  font-weight: 800;
+  color: #8758FF;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.stat-label {
+  font-size: 13px;
+  color: #9ca3af;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* ── CTA (dark) ──────────────────────────────────────────── */
+.landing-cta {
+  background: #0f0f0f;
+  padding: 100px 48px;
+  text-align: center;
+}
+
+.landing-cta-title {
+  font-size: 48px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.03em;
+  margin-bottom: 20px;
+  min-height: 1.2em;
+}
+
+/* Override cursor color for dark background */
+.landing-cta .tw-cursor { background: #8758FF; }
+
+.landing-cta-sub {
+  font-size: 16px;
+  color: #9ca3af;
+  margin-bottom: 44px;
+  opacity: 0;
+  transition: opacity 0.4s ease 0.1s;
+}
+.landing-cta-sub.visible { opacity: 1; }
+
+.landing-cta-btns {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.landing-cta-btns.visible { opacity: 1; transform: translateY(0); }
+
+.landing-cta .btn-landing-ghost {
+  color: #e5e7eb;
+  border-color: #374151;
+}
+.landing-cta .btn-landing-ghost:hover {
+  border-color: #8758FF;
+  color: #8758FF;
+}
+
+/* ── Footer ──────────────────────────────────────────────── */
+.landing-footer {
+  background: #0f0f0f;
+  border-top: 1px solid #1f2937;
+  padding: 24px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.landing-footer-logo {
+  font-size: 15px;
+  font-weight: 800;
+  color: #8758FF;
+}
+.landing-footer-copy {
+  font-size: 12px;
+  color: #4b5563;
+}

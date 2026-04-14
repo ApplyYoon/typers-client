@@ -8,7 +8,15 @@ import Profile from './pages/Profile';
 import Custom from './pages/Custom';
 import Typing from './pages/Typing';
 import Battle from './pages/Battle';
+import Home from './pages/Home';
+import Landing from './pages/Landing';
 import './styles/global.css';
+
+/** localStorage에 auth 플래그가 있으면 /home으로, 없으면 랜딩 */
+const RootRoute: React.FC = () => {
+  const isLoggedIn = localStorage.getItem('typers_auth') === 'true';
+  return isLoggedIn ? <Navigate to="/home" replace /> : <Landing />;
+};
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <>
@@ -63,7 +71,15 @@ const App: React.FC = () => {
             </Layout>
           }
         />
-        <Route path="/" element={<Navigate to="/battle" replace />} />
+        <Route path="/" element={<RootRoute />} />
+        <Route
+          path="/home"
+          element={
+            <Layout>
+              <Home />
+            </Layout>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

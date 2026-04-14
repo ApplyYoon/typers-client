@@ -1,7 +1,7 @@
 /* ===== Page wrapper ===== */
 .battle-page {
   min-height: calc(100vh - 56px);
-  background: linear-gradient(160deg, #f5f3ff 0%, #ede9fe 40%, #e0d9fb 100%);
+  background: var(--gray-100);
 }
 
 /* ===== School Select ===== */
@@ -154,7 +154,7 @@
   object-fit: contain;
   display: block;
   margin-bottom: 8px;
-  filter: drop-shadow(0 4px 16px rgba(124,58,237,0.3));
+  filter: drop-shadow(0 4px 16px rgba(135,88,255,0.3));
   /* animation: float 3s ease-in-out infinite; */
 }
 
@@ -200,7 +200,7 @@
 .school-type-tab.active {
   background: var(--purple-primary);
   color: #fff;
-  box-shadow: 0 3px 10px rgba(124,58,237,0.3);
+  box-shadow: 0 3px 10px rgba(135,88,255,0.3);
 }
 
 .school-type-tab:hover:not(.active) {
@@ -396,12 +396,12 @@
   font-weight: 700;
   letter-spacing: 0.03em;
   transition: all 0.2s;
-  box-shadow: 0 6px 20px rgba(124,58,237,0.35);
+  box-shadow: 0 6px 20px rgba(135,88,255,0.35);
 }
 
 .start-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 10px 28px rgba(124,58,237,0.4);
+  box-shadow: 0 10px 28px rgba(135,88,255,0.4);
 }
 
 .start-btn:disabled {
@@ -528,24 +528,49 @@
   white-space: pre-wrap;
 }
 
+/* 한국어 한정: 자모 조합 중 폭 변화로 인한 레이아웃 밀림 방지 */
+.arena-text-ko .char-pending,
+.arena-text-ko .char-correct,
+.arena-text-ko .char-wrong,
+.arena-text-ko .char-composing,
+.arena-text-ko .char-cursor {
+  display: inline-block;
+  width: 1em;
+  text-align: center;
+}
+
 .char-pending   { color: #d1d5db; }
-.char-correct   { color: #7c3aed; font-weight: 500; }
+.char-correct   { color: var(--green-dark); }          /* 정확히 입력 = 성공(초록) */
 .char-wrong     { color: #ef4444; background: #fee2e2; border-radius: 3px; }
 .char-composing {
-  color: #7c3aed;
-  border-bottom: 2px solid #7c3aed;
-  opacity: 0.6;
+  color: var(--purple-primary);                        /* 입력 중 = 진행(보라) */
+  box-shadow: 0 2px 0 var(--purple-primary);
+  opacity: 0.7;
 }
-.char-cursor  {
+.char-cursor {
   color: #d1d5db;
-  border-left: 2.5px solid #7c3aed;
+  position: relative;
+}
+
+/* 글자 높이의 60%짜리 커서 막대 */
+.char-cursor::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 20%;
+  height: 60%;
+  width: 1.5px;
+  background: var(--purple-primary);
   animation: blink 0.9s step-end infinite;
-  margin-left: 1px;
+}
+
+.char-space-ko {
+  width: 0.4em;
 }
 
 @keyframes blink {
-  0%, 100% { border-color: #7c3aed; }
-  50%       { border-color: transparent; }
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
 }
 
 /* ===== Phase badge ===== */
@@ -561,8 +586,8 @@
 }
 
 .phase-badge.korean {
-  background: #ede9fe;
-  color: #7c3aed;
+  background: var(--purple-bg);
+  color: var(--purple-primary);
 }
 
 .phase-badge.english {
@@ -649,7 +674,7 @@
   border-radius: 24px;
   padding: 40px;
   text-align: center;
-  box-shadow: 0 8px 32px rgba(124,58,237,0.12);
+  box-shadow: 0 8px 32px rgba(135,88,255,0.10);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -855,12 +880,12 @@
   font-size: 16px;
   font-weight: 700;
   transition: all 0.2s;
-  box-shadow: 0 6px 20px rgba(124,58,237,0.3);
+  box-shadow: 0 6px 20px rgba(135,88,255,0.3);
 }
 
 .result-retry-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 28px rgba(124,58,237,0.4);
+  box-shadow: 0 10px 28px rgba(135,88,255,0.4);
 }
 
 .result-change-btn {

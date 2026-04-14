@@ -7,7 +7,6 @@ import {
   type NeisSchool,
 } from '../../utils/schoolApi';
 import { getSchoolStats } from '../../utils/battleStorage';
-import { SCHOOLS } from '../../data/schools';
 
 interface Props {
   onConfirm: (schoolId: string, username: string, schoolName: string) => void;
@@ -72,7 +71,7 @@ const SchoolSelect: React.FC<Props> = ({ onConfirm }) => {
         <div className="school-select-form">
           <div className="battle-logo">
             <img src="/logo_nbg.png" alt="logo" className="battle-logo-emoji" />
-            <h1 className="battle-logo-title">학교 대항전</h1>
+            <h1 className="battle-logo-title">Typers 학교 대항전</h1>
             <p className="battle-logo-sub">한국어 40초 · 영어 20초 · CPM 측정</p>
           </div>
 

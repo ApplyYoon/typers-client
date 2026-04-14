@@ -42,10 +42,12 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
   const [liveCpm, setLiveCpm]           = useState(0);
   const [frame, setFrame]               = useState<1 | 2>(1);
 
-  const inputRef     = useRef<HTMLInputElement>(null);
-  const startTimeRef = useRef<number>(0);
-  const finishedRef  = useRef(false);
-  const phaseRef     = useRef<Phase>(getPhase(TOTAL, lang));
+  const inputRef        = useRef<HTMLInputElement>(null);
+  const startTimeRef    = useRef<number>(0);
+  const finishedRef     = useRef(false);
+  const phaseRef        = useRef<Phase>(getPhase(TOTAL, lang));
+  const totalCorrectRef = useRef(0);
+  const totalTypedRef   = useRef(0);
 
   // 텍스트가 바뀌면 자모 분해 + jamoPos 리셋
   const jamoInfo = useMemo(() => decomposeText(text), [text]);
@@ -106,16 +108,12 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
   const doFinish = useCallback(() => {
     if (finishedRef.current) return;
     finishedRef.current = true;
-    const elapsed = (Date.now() - startTimeRef.current) / 1000 / 60 || 1 / 60;
-    setTotalCorrect(correct => {
-      setTotalTyped(typed => {
-        const cpm      = Math.round(correct / elapsed);
-        const accuracy = typed > 0 ? Math.round((correct / typed) * 100) : 0;
-        setTimeout(() => onFinish(cpm, accuracy), 0);
-        return typed;
-      });
-      return correct;
-    });
+    const elapsed  = (Date.now() - startTimeRef.current) / 1000 / 60 || 1 / 60;
+    const correct  = totalCorrectRef.current;
+    const typed    = totalTypedRef.current;
+    const cpm      = Math.round(correct / elapsed);
+    const accuracy = typed > 0 ? Math.round((correct / typed) * 100) : 0;
+    onFinish(cpm, accuracy);
   }, [onFinish]);
 
   // ── 키 입력 처리 ─────────────────────────────
@@ -150,11 +148,13 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
     }
 
     setFrame(f => f === 1 ? 2 : 1);
+    totalTypedRef.current += 1;
     setTotalTyped(n => n + 1);
 
     if (typed === expected) {
       setHasError(false);
       setWrongTyped('');
+      totalCorrectRef.current += 1;
       setTotalCorrect(n => n + 1);
       const nextPos = jamoPos + 1;
 
@@ -180,18 +180,11 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
     // 아직 안 온 음절 → 회색
     if (jamoPos < range.start) return { cls: 'pending', char: targetChar };
 
-    // 현재 진행 중인 음절
-    if (hasError) {
-      // 틀린 자모 빨간색으로 표시
-      return { cls: 'wrong', char: wrongTyped || targetChar };
-    }
+    // 현재 진행 중인 음절 — 칸 너비가 고정되므로 실시간 자모 표시 가능
+    if (hasError) return { cls: 'wrong', char: wrongTyped || targetChar };
+    if (jamoPos === range.start) return { cls: 'cursor', char: targetChar };
 
-    if (jamoPos === range.start) {
-      // 이 음절의 첫 자모를 아직 안 쳤음 → 커서
-      return { cls: 'cursor', char: targetChar };
-    }
-
-    // 일부 자모를 올바르게 쳤음 → 부분 음절 합성해서 보라색으로
+    // 일부 자모를 올바르게 쳤음 → 부분 음절 합성 (ㅈ → 저)
     const typedJamos = jamoInfo.jamoSequence.slice(range.start, jamoPos);
     return { cls: 'composing', char: composePartialJamos(typedJamos) };
   };
@@ -200,7 +193,7 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
   const timerPct   = (timeLeft / TOTAL) * 100;
   const charLevel  = liveCpm >= 400 ? 3 : liveCpm >= 200 ? 2 : 1;
   const charSrc    = `/typing/character_typing_${charLevel}-${frame}.png`;
-  const timerColor = timeLeft > KO_END ? '#7c3aed' : timeLeft > TRANS_END ? '#f59e0b' : '#10b981';
+  const timerColor = timeLeft > KO_END ? '#8758FF' : timeLeft > TRANS_END ? '#f59e0b' : '#10b981';
   const accuracy   = totalTyped > 0 ? Math.round((totalCorrect / totalTyped) * 100) : 100;
   const transCount = timeLeft - TRANS_END;
 
@@ -226,7 +219,7 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
         <div className="arena-topbar">
           <div className="arena-stat">
             <span className="arena-stat-label">CPM</span>
-            <span className="arena-stat-value" style={{ color: '#7c3aed' }}>{liveCpm}</span>
+            <span className="arena-stat-value" style={{ color: '#8758FF' }}>{liveCpm}</span>
           </div>
           <div className="arena-timer-wrap">
             <svg className="arena-timer-svg" viewBox="0 0 120 120">
@@ -263,7 +256,7 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
       <div className="arena-topbar">
         <div className="arena-stat">
           <span className="arena-stat-label">CPM</span>
-          <span className="arena-stat-value" style={{ color: '#7c3aed' }}>{liveCpm}</span>
+          <span className="arena-stat-value" style={{ color: '#8758FF' }}>{liveCpm}</span>
         </div>
         <div className="arena-timer-wrap">
           <svg className="arena-timer-svg" viewBox="0 0 120 120">
@@ -298,10 +291,11 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
       </div>
 
       {/* 목표 문장 — 음절 단위 색상 + 실제 입력 글자 표시 */}
-      <div className="arena-text" onClick={() => inputRef.current?.focus()}>
+      <div className={`arena-text${phase === 'korean' ? ' arena-text-ko' : ''}`} onClick={() => inputRef.current?.focus()}>
         {text.split('').map((char, i) => {
           const { cls, char: displayChar } = getSyllableDisplay(i, char);
-          return <span key={i} className={`char-${cls}`}>{displayChar}</span>;
+          const spaceCls = char === ' ' && phase === 'korean' ? ' char-space-ko' : '';
+          return <span key={i} className={`char-${cls}${spaceCls}`}>{displayChar}</span>;
         })}
       </div>
 

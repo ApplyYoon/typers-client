@@ -8,7 +8,8 @@ const Login: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    navigate('/ranking');
+    localStorage.setItem('typers_auth', 'true');
+    navigate('/home');
   };
 
   return (

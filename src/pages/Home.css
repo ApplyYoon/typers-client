@@ -1,0 +1,259 @@
+/* ── 공통 버튼 ──────────────────────────────────────────── */
+.btn-primary {
+  padding: 12px 28px;
+  background: var(--purple-primary);
+  color: #fff;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+
+.btn-primary:hover {
+  background: #5b21b6;
+}
+
+.btn-primary.full-width {
+  width: 100%;
+  text-align: center;
+}
+
+.btn-ghost {
+  padding: 12px 28px;
+  background: transparent;
+  color: #4b5563;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.btn-ghost:hover {
+  border-color: var(--purple-primary);
+  color: var(--purple-primary);
+}
+
+.btn-text {
+  background: none;
+  border: none;
+  color: var(--purple-primary);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── 페이지 래퍼 ─────────────────────────────────────────── */
+.home {
+  min-height: calc(100vh - 56px);
+  background: #fff;
+}
+
+/* ── 히어로 ──────────────────────────────────────────────── */
+.home-hero {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 80px 24px 64px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.home-eyebrow {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--purple-primary);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.home-title {
+  font-size: 44px;
+  font-weight: 800;
+  color: #1f2937;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.home-hero-actions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+/* ── 모드 선택 ──────────────────────────────────────────── */
+.home-modes {
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.home-section-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.home-section-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9ca3af;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding-top: 32px;
+  margin-bottom: 12px;
+}
+
+.mode-tabs {
+  display: flex;
+  gap: 4px;
+  padding-bottom: 0;
+}
+
+.mode-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 12px 20px;
+  border-radius: 8px 8px 0 0;
+  background: transparent;
+  border-bottom: 2px solid transparent;
+  transition: background 0.15s, border-color 0.15s;
+  cursor: pointer;
+}
+
+.mode-tab:hover {
+  background: #f9fafb;
+}
+
+.mode-tab.active {
+  border-bottom-color: var(--purple-primary);
+  background: #f9fafb;
+}
+
+.mode-tab-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.mode-tab.active .mode-tab-label {
+  color: var(--purple-primary);
+}
+
+.mode-tab-sub {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* ── 콘텐츠 그리드 ───────────────────────────────────────── */
+.home-content {
+  background: #f9fafb;
+  padding: 40px 0 80px;
+}
+
+.home-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 20px;
+  align-items: start;
+  padding-top: 0;
+}
+
+/* ── 카드 ────────────────────────────────────────────────── */
+.home-card {
+  background: #fff;
+  border: 1px solid #f3f4f6;
+  border-radius: 12px;
+  padding: 28px;
+}
+
+.home-card-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.home-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.home-card-meta {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.home-empty {
+  height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+/* ── 액션 카드 ──────────────────────────────────────────── */
+.home-action-card {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.home-action-desc {
+  font-size: 14px;
+  color: #4b5563;
+  line-height: 1.7;
+}
+
+.home-action-stats {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 16px 0;
+  border-top: 1px solid #f3f4f6;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.home-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.home-stat-num {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--purple-primary);
+  line-height: 1;
+}
+
+.home-stat-unit {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--purple-primary);
+}
+
+.home-stat-label {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 4px;
+}
+
+.home-stat-divider {
+  width: 1px;
+  height: 36px;
+  background: #f3f4f6;
+}

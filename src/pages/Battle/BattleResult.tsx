@@ -84,7 +84,6 @@ const BattleResult: React.FC<Props> = ({
           <div className="school-ranking-list">
             {stats.slice(0, 8).map((stat, idx) => {
               const isMine = stat.schoolId === schoolId;
-              const color  = schoolColor(stat.schoolId);
               return (
                 <div
                   key={stat.schoolId}
