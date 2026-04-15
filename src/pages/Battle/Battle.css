@@ -528,7 +528,8 @@
   white-space: pre-wrap;
 }
 
-/* ── 한국어 구간 고정 폭: 자모(ㄴ) ↔ 음절(나) 폭 차이로 인한 레이아웃 밀림 방지 */
+/* ── 한국어 구간 고정 폭: 자모(ㄴ) ↔ 음절(나) 폭·높이 차이로 인한 레이아웃 밀림 방지
+   vertical-align: middle → inline-block 요소의 세로 기준선 고정 (줄 높이 흔들림 방지) */
 .arena-text-ko .char-pending,
 .arena-text-ko .char-correct,
 .arena-text-ko .char-wrong,
@@ -537,25 +538,40 @@
   display: inline-block;
   width: 1em;
   text-align: center;
+  vertical-align: middle;
 }
 
-/* 한국어 커서: border-left는 박스 폭을 변경하므로 box-shadow inset으로 대체 */
+/* 한국어 커서: border-left는 박스 폭 변경, box-shadow inset은 높이 제어 불가
+   → ::before 절대 위치로 폭/높이 모두 독립 제어 */
 .arena-text-ko .char-cursor {
   border-left: none;
   margin-left: 0;
+  animation: none;
+  position: relative;
+}
+.arena-text-ko .char-cursor::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 22%;
+  height: 52%;
+  width: 2px;
+  background: #7c3aed;
   animation: blink-ko 0.9s step-end infinite;
-  box-shadow: inset 2.5px 0 0 #7c3aed;
 }
 @keyframes blink-ko {
-  0%, 100% { box-shadow: inset 2.5px 0 0 #7c3aed; }
-  50%       { box-shadow: none; }
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
 }
 
-/* 한국어 띄어쓰기: 음절보다 좁게 */
-.char-space-ko { width: 0.4em; }
+/* 한국어 띄어쓰기: 폭 + 폰트 축소 */
+.char-space-ko {
+  width: 0.35em;
+  font-size: 0.6em;
+}
 
 .char-pending   { color: #d1d5db; }
-.char-correct   { color: #7c3aed; font-weight: 500; }
+.char-correct   { color: #7c3aed; }
 .char-wrong     { color: #ef4444; background: #fee2e2; border-radius: 3px; }
 .char-composing {
   color: #7c3aed;
