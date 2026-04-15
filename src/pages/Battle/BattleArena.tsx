@@ -297,11 +297,16 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
         <img src={charSrc} alt="character" className="arena-character-img" />
       </div>
 
-      {/* 목표 문장 — 음절 단위 색상 + 실제 입력 글자 표시 */}
-      <div className="arena-text" onClick={() => inputRef.current?.focus()}>
+      {/* 목표 문장 — 음절 단위 색상 + 실제 입력 글자 표시
+          arena-text-ko: 한국어 구간에서만 고정 폭 적용 (자모↔음절 폭 차이 방지) */}
+      <div
+        className={`arena-text${phase === 'korean' ? ' arena-text-ko' : ''}`}
+        onClick={() => inputRef.current?.focus()}
+      >
         {text.split('').map((char, i) => {
           const { cls, char: displayChar } = getSyllableDisplay(i, char);
-          return <span key={i} className={`char-${cls}`}>{displayChar}</span>;
+          const spaceCls = char === ' ' && phase === 'korean' ? ' char-space-ko' : '';
+          return <span key={i} className={`char-${cls}${spaceCls}`}>{displayChar}</span>;
         })}
       </div>
 

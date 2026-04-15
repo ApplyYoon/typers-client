@@ -528,6 +528,32 @@
   white-space: pre-wrap;
 }
 
+/* ── 한국어 구간 고정 폭: 자모(ㄴ) ↔ 음절(나) 폭 차이로 인한 레이아웃 밀림 방지 */
+.arena-text-ko .char-pending,
+.arena-text-ko .char-correct,
+.arena-text-ko .char-wrong,
+.arena-text-ko .char-composing,
+.arena-text-ko .char-cursor {
+  display: inline-block;
+  width: 1em;
+  text-align: center;
+}
+
+/* 한국어 커서: border-left는 박스 폭을 변경하므로 box-shadow inset으로 대체 */
+.arena-text-ko .char-cursor {
+  border-left: none;
+  margin-left: 0;
+  animation: blink-ko 0.9s step-end infinite;
+  box-shadow: inset 2.5px 0 0 #7c3aed;
+}
+@keyframes blink-ko {
+  0%, 100% { box-shadow: inset 2.5px 0 0 #7c3aed; }
+  50%       { box-shadow: none; }
+}
+
+/* 한국어 띄어쓰기: 음절보다 좁게 */
+.char-space-ko { width: 0.4em; }
+
 .char-pending   { color: #d1d5db; }
 .char-correct   { color: #7c3aed; font-weight: 500; }
 .char-wrong     { color: #ef4444; background: #fee2e2; border-radius: 3px; }
