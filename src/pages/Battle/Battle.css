@@ -539,6 +539,7 @@
   width: 1em;
   text-align: center;
   vertical-align: middle;
+  line-height: 1;        /* 높이를 1em으로 고정 → jamo↔음절 전환 시 line box 흔들림 방지 */
 }
 
 /* 한국어 커서: border-left는 박스 폭 변경, box-shadow inset은 높이 제어 불가
@@ -564,10 +565,9 @@
   50%       { opacity: 0; }
 }
 
-/* 한국어 띄어쓰기: 폭 + 폰트 축소 */
+/* 한국어 띄어쓰기: 폭만 줄임 — font-size 건드리면 ::before 커서도 비례 축소되므로 유지 */
 .char-space-ko {
   width: 0.35em;
-  font-size: 0.6em;
 }
 
 .char-pending   { color: #d1d5db; }
