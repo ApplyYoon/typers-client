@@ -182,6 +182,9 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
 
     // 현재 진행 중인 음절
     if (hasError) {
+      // 띄어쓰기 위치 오타: 입력한 글자 표시 금지 (공백 그대로 유지)
+      if (targetChar === ' ') return { cls: 'wrong', char: ' ' };
+
       if (jamoPos > range.start) {
         // 일부 자모를 맞게 친 후 오타 → 올바른 자모 + 틀린 자모 합성 시도
         // ex) ㅁ+ㅜ → '무',  ㅁ+ㄴ → 합성 불가이므로 'ㄴ' 단독 표시
