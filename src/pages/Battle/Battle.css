@@ -554,8 +554,8 @@
   content: '';
   position: absolute;
   left: 0;
-  top: 1%;
-  height: 98%;
+  top: 0;
+  height: 100%;
   width: 2px;
   background: #7c3aed;
   animation: blink-ko 0.9s step-end infinite;
@@ -565,8 +565,8 @@
   50%       { opacity: 0; }
 }
 
-/* 한국어 띄어쓰기: 폭만 줄임 — font-size 건드리면 ::before 커서도 비례 축소되므로 유지 */
-.char-space-ko {
+/* 한국어 띄어쓰기: .arena-text-ko .char-* 보다 specificity 높게 설정해야 width 적용됨 */
+.arena-text-ko .char-space-ko {
   width: 0.06em;
 }
 
