@@ -554,8 +554,8 @@
   content: '';
   position: absolute;
   left: 0;
-  top: 4%;
-  height: 94%;
+  top: 1%;
+  height: 98%;
   width: 2px;
   background: #7c3aed;
   animation: blink-ko 0.9s step-end infinite;
