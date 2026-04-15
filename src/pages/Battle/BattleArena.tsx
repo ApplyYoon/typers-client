@@ -42,10 +42,13 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
   const [liveCpm, setLiveCpm]           = useState(0);
   const [frame, setFrame]               = useState<1 | 2>(1);
 
-  const inputRef     = useRef<HTMLInputElement>(null);
-  const startTimeRef = useRef<number>(0);
-  const finishedRef  = useRef(false);
-  const phaseRef     = useRef<Phase>(getPhase(TOTAL, lang));
+  const inputRef        = useRef<HTMLInputElement>(null);
+  const startTimeRef    = useRef<number>(0);
+  const finishedRef     = useRef(false);
+  const phaseRef        = useRef<Phase>(getPhase(TOTAL, lang));
+  // ref로 병행 추적: doFinish 호출 시 stale state 없이 최신값 읽기 위함
+  const totalCorrectRef = useRef(0);
+  const totalTypedRef   = useRef(0);
 
   // 텍스트가 바뀌면 자모 분해 + jamoPos 리셋
   const jamoInfo = useMemo(() => decomposeText(text), [text]);
@@ -106,16 +109,12 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
   const doFinish = useCallback(() => {
     if (finishedRef.current) return;
     finishedRef.current = true;
-    const elapsed = (Date.now() - startTimeRef.current) / 1000 / 60 || 1 / 60;
-    setTotalCorrect(correct => {
-      setTotalTyped(typed => {
-        const cpm      = Math.round(correct / elapsed);
-        const accuracy = typed > 0 ? Math.round((correct / typed) * 100) : 0;
-        setTimeout(() => onFinish(cpm, accuracy), 0);
-        return typed;
-      });
-      return correct;
-    });
+    const elapsed  = (Date.now() - startTimeRef.current) / 1000 / 60 || 1 / 60;
+    const correct  = totalCorrectRef.current;
+    const typed    = totalTypedRef.current;
+    const cpm      = Math.round(correct / elapsed);
+    const accuracy = typed > 0 ? Math.round((correct / typed) * 100) : 0;
+    onFinish(cpm, accuracy);
   }, [onFinish]);
 
   // ── 키 입력 처리 ─────────────────────────────
@@ -132,6 +131,9 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
       return;
     }
 
+    // 오타 상태에서는 Backspace 외 모든 키 차단 (버그2: 정답 키로 오타 스킵 방지)
+    if (hasError) return;
+
     const { jamoSequence } = jamoInfo;
     const expected = jamoSequence[jamoPos];
     if (expected === undefined) return;
@@ -144,17 +146,21 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
       if (!baseKey) return;
       const physKey = e.shiftKey ? baseKey.toUpperCase() : baseKey;
       typed = KOREAN_KEY_TO_JAMO[physKey] ?? '';
+      // 버그1: 매핑 안 된 키(숫자·특수문자 등) → typed='' → 정확도 오염 방지
+      if (!typed) return;
     } else {
       // 영어·공백: e.key 그대로
       typed = e.key;
     }
 
     setFrame(f => f === 1 ? 2 : 1);
+    totalTypedRef.current += 1;
     setTotalTyped(n => n + 1);
 
     if (typed === expected) {
       setHasError(false);
       setWrongTyped('');
+      totalCorrectRef.current += 1;
       setTotalCorrect(n => n + 1);
       const nextPos = jamoPos + 1;
 
