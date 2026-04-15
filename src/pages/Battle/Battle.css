@@ -554,8 +554,8 @@
   content: '';
   position: absolute;
   left: 0;
-  top: 22%;
-  height: 52%;
+  top: 15%;
+  height: 68%;
   width: 2px;
   background: #7c3aed;
   animation: blink-ko 0.9s step-end infinite;
@@ -567,7 +567,7 @@
 
 /* 한국어 띄어쓰기: 폭만 줄임 — font-size 건드리면 ::before 커서도 비례 축소되므로 유지 */
 .char-space-ko {
-  width: 0.35em;
+  width: 0.22em;
 }
 
 .char-pending   { color: #d1d5db; }
