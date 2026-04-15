@@ -567,7 +567,7 @@
 
 /* 한국어 띄어쓰기: .arena-text-ko .char-* 보다 specificity 높게 설정해야 width 적용됨 */
 .arena-text-ko .char-space-ko {
-  width: 0.06em;
+  width: 0.5em;
 }
 
 .char-pending   { color: #d1d5db; }
