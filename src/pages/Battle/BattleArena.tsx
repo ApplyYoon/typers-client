@@ -183,13 +183,13 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
     // 현재 진행 중인 음절
     if (hasError) {
       if (jamoPos > range.start) {
-        // 일부 자모를 맞게 친 후 오타 → 올바른 자모 + 틀린 자모 합성해서 표시
-        // ex) ㅁ 맞게 친 뒤 ㅜ 오타 → composePartialJamos(['ㅁ','ㅜ']) = '무'
-        const composed = composePartialJamos([
-          ...jamoInfo.jamoSequence.slice(range.start, jamoPos),
-          wrongTyped,
-        ]);
-        return { cls: 'wrong', char: composed };
+        // 일부 자모를 맞게 친 후 오타 → 올바른 자모 + 틀린 자모 합성 시도
+        // ex) ㅁ+ㅜ → '무',  ㅁ+ㄴ → 합성 불가이므로 'ㄴ' 단독 표시
+        const correctJamos = jamoInfo.jamoSequence.slice(range.start, jamoPos);
+        const before   = composePartialJamos(correctJamos);
+        const composed = composePartialJamos([...correctJamos, wrongTyped]);
+        // 합성 결과가 오타 추가 전과 같으면 합성 실패 → wrongTyped 단독 표시
+        return { cls: 'wrong', char: composed !== before ? composed : wrongTyped };
       }
       // 첫 자모부터 오타 → 틀린 자모 단독 표시
       return { cls: 'wrong', char: wrongTyped || targetChar };
