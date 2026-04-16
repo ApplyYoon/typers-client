@@ -152,7 +152,7 @@ const Profile: React.FC = () => {
               <YAxis tick={{ fontSize: 11 }} domain={[80, 100]} unit="%" />
               <Tooltip
                 contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                formatter={(v: number | undefined) => v !== undefined ? [`${v}%`, '정확도'] : ['', '']}
+                formatter={(v) => v !== undefined ? [`${v}%`, '정확도'] : ['', '']}
               />
               <Line
                 type="monotone"

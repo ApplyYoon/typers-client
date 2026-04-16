@@ -1,12 +1,6 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { getRandomText, type Lang } from '../../data/texts';
-import {
-  decomposeText,
-  composePartialJamos,
-  isKoreanJamo,
-  KOREAN_KEY_TO_JAMO,
-  CODE_TO_QWERTY,
-} from '../../utils/jamoUtils';
+import { useTypingEngine } from '../../hooks/useTypingEngine';
 
 interface Props {
   lang: Lang;
@@ -31,34 +25,30 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
   const [started, setStarted]     = useState(false);
   const [timeLeft, setTimeLeft]   = useState(TOTAL);
   const [text, setText]           = useState(() => getRandomText(lang === 'mixed' ? 'ko' : lang));
+  const [liveCpm, setLiveCpm]     = useState(0);
 
-  // 자모 단위 진행 상태
-  const [jamoPos, setJamoPos]     = useState(0);
-  const [hasError, setHasError]   = useState(false);
-  const [wrongTyped, setWrongTyped] = useState(''); // 오타 시 실제 입력한 자모
+  const startTimeRef  = useRef<number>(0);
+  const finishedRef   = useRef(false);
+  const phaseRef      = useRef<Phase>(getPhase(TOTAL, lang));
 
-  const [totalCorrect, setTotalCorrect] = useState(0);
-  const [totalTyped,   setTotalTyped]   = useState(0);
-  const [liveCpm, setLiveCpm]           = useState(0);
-  const [frame, setFrame]               = useState<1 | 2>(1);
+  // 문장 완료 시 다음 텍스트로 교체
+  const handleComplete = useCallback(() => {
+    const nextLang = phaseRef.current === 'english' ? 'en' : 'ko';
+    setText(getRandomText(nextLang));
+  }, []);
 
-  const inputRef        = useRef<HTMLInputElement>(null);
-  const startTimeRef    = useRef<number>(0);
-  const finishedRef     = useRef(false);
-  const phaseRef        = useRef<Phase>(getPhase(TOTAL, lang));
-  // ref로 병행 추적: doFinish 호출 시 stale state 없이 최신값 읽기 위함
-  const totalCorrectRef = useRef(0);
-  const totalTypedRef   = useRef(0);
+  // 타이핑 엔진
+  const {
+    inputRef,
+    handleKeyDown,
+    getSyllableDisplay,
+    totalCorrect,
+    accuracy,
+    frame,
+    getScore,
+  } = useTypingEngine({ text, active: started, onComplete: handleComplete });
 
-  // 텍스트가 바뀌면 자모 분해 + jamoPos 리셋
-  const jamoInfo = useMemo(() => decomposeText(text), [text]);
-  useEffect(() => {
-    setJamoPos(0);
-    setHasError(false);
-    setWrongTyped('');
-  }, [text]);
-
-  // ── 카운트다운 ──────────────────────────────
+  // ── 카운트다운 ──────────────────────────────────────────────
   useEffect(() => {
     if (countdown <= 0) {
       setStarted(true);
@@ -70,7 +60,7 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
     return () => clearTimeout(t);
   }, [countdown]);
 
-  // ── 타이머 ──────────────────────────────────
+  // ── 타이머 ──────────────────────────────────────────────────
   useEffect(() => {
     if (!started || finishedRef.current) return;
     if (timeLeft <= 0) { doFinish(); return; }
@@ -78,16 +68,13 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
     return () => clearTimeout(t);
   }, [started, timeLeft]);
 
-  // ── 페이즈 전환 ─────────────────────────────
+  // ── 페이즈 전환 ─────────────────────────────────────────────
   useEffect(() => {
     if (!started) return;
     const phase = getPhase(timeLeft, lang);
 
     if (phase === 'transition' && phaseRef.current === 'korean') {
       phaseRef.current = 'transition';
-      // text는 유지, 자모 상태만 리셋 (useEffect on text handles it if we setText)
-      setJamoPos(0);
-      setHasError(false);
     }
 
     if (phase === 'english' && phaseRef.current === 'transition') {
@@ -97,7 +84,7 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
     }
   }, [timeLeft, started, lang]);
 
-  // ── 실시간 CPM ──────────────────────────────
+  // ── 실시간 CPM ──────────────────────────────────────────────
   useEffect(() => {
     if (!startTimeRef.current) return;
     const elapsed = (Date.now() - startTimeRef.current) / 1000 / 60;
@@ -105,124 +92,23 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
     setLiveCpm(Math.round(totalCorrect / elapsed));
   }, [totalCorrect]);
 
-  // ── 종료 ────────────────────────────────────
+  // ── 종료 ────────────────────────────────────────────────────
   const doFinish = useCallback(() => {
     if (finishedRef.current) return;
     finishedRef.current = true;
-    const elapsed  = (Date.now() - startTimeRef.current) / 1000 / 60 || 1 / 60;
-    const correct  = totalCorrectRef.current;
-    const typed    = totalTypedRef.current;
-    const cpm      = Math.round(correct / elapsed);
-    const accuracy = typed > 0 ? Math.round((correct / typed) * 100) : 0;
-    onFinish(cpm, accuracy);
-  }, [onFinish]);
+    const { cpm, accuracy: acc } = getScore(startTimeRef.current);
+    onFinish(cpm, acc);
+  }, [getScore, onFinish]);
 
-  // ── 키 입력 처리 ─────────────────────────────
-  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!started) return;
-    if (e.ctrlKey || e.metaKey || e.altKey) return;
-    if (e.key.length > 1 && e.key !== 'Backspace') return;
-
-    e.preventDefault();
-
-    // Backspace: 오타 상태만 해제
-    if (e.key === 'Backspace') {
-      if (hasError) { setHasError(false); setWrongTyped(''); }
-      return;
-    }
-
-    // 오타 상태에서는 Backspace 외 모든 키 차단 (버그2: 정답 키로 오타 스킵 방지)
-    if (hasError) return;
-
-    const { jamoSequence } = jamoInfo;
-    const expected = jamoSequence[jamoPos];
-    if (expected === undefined) return;
-
-    // 입력된 자모 결정
-    let typed: string;
-    if (isKoreanJamo(expected)) {
-      // 한국어: e.code → QWERTY 기본키 → 두벌식 자모
-      const baseKey = CODE_TO_QWERTY[e.code];
-      if (!baseKey) return;
-      const physKey = e.shiftKey ? baseKey.toUpperCase() : baseKey;
-      typed = KOREAN_KEY_TO_JAMO[physKey] ?? '';
-      // 버그1: 매핑 안 된 키(숫자·특수문자 등) → typed='' → 정확도 오염 방지
-      if (!typed) return;
-    } else {
-      // 영어·공백: e.key 그대로
-      typed = e.key;
-    }
-
-    setFrame(f => f === 1 ? 2 : 1);
-    totalTypedRef.current += 1;
-    setTotalTyped(n => n + 1);
-
-    if (typed === expected) {
-      setHasError(false);
-      setWrongTyped('');
-      totalCorrectRef.current += 1;
-      setTotalCorrect(n => n + 1);
-      const nextPos = jamoPos + 1;
-
-      if (nextPos >= jamoSequence.length) {
-        const nextLang = phaseRef.current === 'english' ? 'en' : 'ko';
-        setText(getRandomText(nextLang));
-      } else {
-        setJamoPos(nextPos);
-      }
-    } else {
-      setHasError(true);
-      setWrongTyped(typed);
-    }
-  }, [started, hasError, jamoInfo, jamoPos]);
-
-  // ── 렌더 헬퍼 ───────────────────────────────
-  const getSyllableDisplay = (i: number, targetChar: string): { cls: string; char: string } => {
-    const range = jamoInfo.syllableRanges[i];
-
-    // 완료된 음절 → 원래 글자 보라
-    if (jamoPos >= range.end) return { cls: 'correct', char: targetChar };
-
-    // 아직 안 온 음절 → 회색
-    if (jamoPos < range.start) return { cls: 'pending', char: targetChar };
-
-    // 현재 진행 중인 음절
-    if (hasError) {
-      // 띄어쓰기 위치 오타: 입력한 글자 표시 금지 (공백 그대로 유지)
-      if (targetChar === ' ') return { cls: 'wrong', char: ' ' };
-
-      if (jamoPos > range.start) {
-        // 일부 자모를 맞게 친 후 오타 → 올바른 자모 + 틀린 자모 합성 시도
-        // ex) ㅁ+ㅜ → '무',  ㅁ+ㄴ → 합성 불가이므로 'ㄴ' 단독 표시
-        const correctJamos = jamoInfo.jamoSequence.slice(range.start, jamoPos);
-        const before   = composePartialJamos(correctJamos);
-        const composed = composePartialJamos([...correctJamos, wrongTyped]);
-        // 합성 결과가 오타 추가 전과 같으면 합성 실패 → wrongTyped 단독 표시
-        return { cls: 'wrong', char: composed !== before ? composed : wrongTyped };
-      }
-      // 첫 자모부터 오타 → 틀린 자모 단독 표시
-      return { cls: 'wrong', char: wrongTyped || targetChar };
-    }
-
-    if (jamoPos === range.start) {
-      // 이 음절의 첫 자모를 아직 안 쳤음 → 커서
-      return { cls: 'cursor', char: targetChar };
-    }
-
-    // 일부 자모를 올바르게 쳤음 → 부분 음절 합성해서 보라색으로
-    const typedJamos = jamoInfo.jamoSequence.slice(range.start, jamoPos);
-    return { cls: 'composing', char: composePartialJamos(typedJamos) };
-  };
-
+  // ── 렌더 파생값 ─────────────────────────────────────────────
   const phase      = getPhase(timeLeft, lang);
   const timerPct   = (timeLeft / TOTAL) * 100;
   const charLevel  = liveCpm >= 400 ? 3 : liveCpm >= 200 ? 2 : 1;
   const charSrc    = `/typing/character_typing_${charLevel}-${frame}.png`;
   const timerColor = timeLeft > KO_END ? '#7c3aed' : timeLeft > TRANS_END ? '#f59e0b' : '#10b981';
-  const accuracy   = totalTyped > 0 ? Math.round((totalCorrect / totalTyped) * 100) : 100;
   const transCount = timeLeft - TRANS_END;
 
-  // ── 카운트다운 화면 ──────────────────────────
+  // ── 카운트다운 화면 ─────────────────────────────────────────
   if (!started) {
     return (
       <div className="arena-countdown-overlay">
@@ -237,7 +123,7 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
     );
   }
 
-  // ── 전환 카운트다운 오버레이 ─────────────────
+  // ── 전환 카운트다운 오버레이 ────────────────────────────────
   if (phase === 'transition') {
     return (
       <div className="arena">
@@ -275,7 +161,7 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
     );
   }
 
-  // ── 메인 타이핑 화면 ─────────────────────────
+  // ── 메인 타이핑 화면 ────────────────────────────────────────
   return (
     <div className="arena">
       <div className="arena-topbar">

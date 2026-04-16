@@ -101,7 +101,7 @@ const Home: React.FC = () => {
                   />
                   <YAxis hide />
                   <Tooltip
-                    formatter={(v: number | undefined) => v !== undefined ? [`${v} CPM`, '평균 속도'] : ['', '']}
+                    formatter={(v) => v !== undefined ? [`${v} CPM`, '평균 속도'] : ['', '']}
                     contentStyle={{
                       borderRadius: 8,
                       border: '1px solid #e5e7eb',
