@@ -1,182 +1,200 @@
+/* =============================================================
+   Typing Practice Page
+   arena-text / arena-character / arena-input-hidden 등
+   BattleArena와 동일한 클래스명을 재사용하므로 해당 스타일을
+   이 파일에 독립적으로 선언함 (Battle.css 의존 없음)
+============================================================= */
+
+/* ── 페이지 래퍼 ─────────────────────────────────────────── */
 .typing-page {
   min-height: calc(100vh - 56px);
-  background: var(--gray-100);
-  padding: 48px 24px;
+  background: linear-gradient(160deg, #f5f3ff 0%, #ede9fe 40%, #e0d9fb 100%);
 }
 
-.typing-container {
-  max-width: 800px;
+/* ── 메인 컨테이너 ───────────────────────────────────────── */
+.practice-arena {
+  max-width: 860px;
   margin: 0 auto;
+  padding: 40px 24px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 24px;
+  gap: 28px;
 }
 
-.typing-card {
-  width: 100%;
-  background: #fff;
-  border-radius: 24px;
-  padding: 40px;
-  box-shadow: 0 8px 32px rgba(135,88,255,0.08);
-}
-
-.typing-title {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--purple-primary);
-  margin-bottom: 24px;
-  text-align: center;
-}
-
-.typing-stats {
+/* ── 상단 바 ─────────────────────────────────────────────── */
+.practice-topbar {
   display: flex;
-  gap: 32px;
-  justify-content: center;
-  margin-bottom: 32px;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border-radius: 20px;
+  padding: 20px 36px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
 }
 
-.stat-item {
+/* 좌·우 통계 (CPM, 정확도) */
+.practice-stat {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
+  min-width: 80px;
 }
-
-.stat-label {
+.practice-stat-label {
   font-size: 12px;
-  color: var(--gray-400);
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.stat-value {
-  font-size: 32px;
-  font-weight: 800;
-  color: var(--gray-800);
-}
-
-.stat-value.purple {
-  color: var(--purple-primary);
-}
-
-.typing-text-wrap {
-  background: var(--gray-100);
-  border-radius: 14px;
-  padding: 24px;
-  font-size: 20px;
-  line-height: 1.8;
-  letter-spacing: 0.02em;
-  margin-bottom: 24px;
-  min-height: 80px;
-  word-break: keep-all;
-}
-
-.char-pending {
-  color: var(--gray-400);
-}
-
-.char-correct {
-  color: var(--green-dark);
-}
-
-.char-wrong {
-  color: #ef4444;
-  background: #fee2e2;
-  border-radius: 2px;
-}
-
-.char-cursor {
-  color: var(--gray-400);
-  border-left: 2px solid var(--purple-primary);
-  animation: blink 1s step-end infinite;
-}
-
-@keyframes blink {
-  0%, 100% { border-color: var(--purple-primary); }
-  50% { border-color: transparent; }
-}
-
-.typing-input {
-  width: 100%;
-  padding: 14px 20px;
-  border: 2px solid var(--gray-200);
-  border-radius: 12px;
-  font-size: 16px;
-  color: var(--gray-800);
-  background: #fff;
-  transition: border-color 0.2s;
-}
-
-.typing-input:focus {
-  border-color: var(--purple-light);
-}
-
-.typing-input:disabled {
-  background: var(--gray-100);
-  color: var(--gray-400);
-}
-
-.typing-result {
-  margin-top: 28px;
-  text-align: center;
-  padding: 24px;
-  background: var(--purple-bg);
-  border-radius: 16px;
-}
-
-.result-text {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--purple-primary);
-  margin-bottom: 8px;
-}
-
-.result-stats {
-  font-size: 16px;
-  color: var(--gray-600);
-  margin-bottom: 20px;
-}
-
-.result-btn {
-  padding: 10px 32px;
-  background: var(--purple-primary);
-  color: #fff;
-  border-radius: 24px;
-  font-size: 15px;
   font-weight: 600;
-  transition: opacity 0.2s;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.practice-stat-value {
+  font-size: 36px;
+  font-weight: 800;
+  color: #1f2937;
+  line-height: 1;
 }
 
-.result-btn:hover {
-  opacity: 0.9;
-}
-
-.typing-mascot-area {
+/* 가운데: 언어 토글 + 문장 번호 */
+.practice-center {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
 }
 
-.typing-mascot {
-  width: 80px;
-  height: 80px;
-  object-fit: contain;
-  animation: bounce 2s ease-in-out infinite;
+.practice-lang-toggle {
+  display: flex;
+  background: #f3f4f6;
+  border-radius: 10px;
+  padding: 3px;
+  gap: 2px;
 }
-
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-}
-
-.typing-mascot-msg {
-  font-size: 14px;
+.practice-lang-btn {
+  padding: 6px 18px;
+  border-radius: 8px;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--purple-primary);
-  background: var(--purple-bg);
-  padding: 4px 16px;
-  border-radius: 12px;
+  color: #6b7280;
+  background: transparent;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+}
+.practice-lang-btn.active {
+  background: #fff;
+  color: #7c3aed;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.15);
+}
+.practice-lang-btn:not(.active):hover {
+  color: #7c3aed;
+}
+
+.practice-sentence-num {
+  font-size: 12px;
+  font-weight: 500;
+  color: #9ca3af;
+}
+
+/* ── 캐릭터 ──────────────────────────────────────────────── */
+/* Battle.css와 동일 — 독립 선언 */
+.arena-character {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+.arena-character-img {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  image-rendering: auto;
+}
+
+/* ── 타이핑 텍스트 박스 ───────────────────────────────────── */
+.arena-text {
+  background: #fff;
+  border-radius: 20px;
+  padding: 32px;
+  font-size: 22px;
+  line-height: 2.2;
+  letter-spacing: 0.05em;
+  cursor: text;
+  user-select: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  word-break: break-all;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+/* ── 한국어 구간: 자모↔음절 폭·높이 차이로 인한 밀림 방지 ── */
+.arena-text-ko .char-pending,
+.arena-text-ko .char-correct,
+.arena-text-ko .char-wrong,
+.arena-text-ko .char-composing,
+.arena-text-ko .char-cursor {
+  display: inline-block;
+  width: 1em;
+  text-align: center;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+/* 한국어 커서: border-left는 박스 폭 증가 → ::before 절대 위치로 독립 제어 */
+.arena-text-ko .char-cursor {
+  border-left: none;
+  margin-left: 0;
+  animation: none;
+  position: relative;
+}
+.arena-text-ko .char-cursor::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 2px;
+  background: #7c3aed;
+  animation: blink-ko 0.9s step-end infinite;
+}
+@keyframes blink-ko {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* 띄어쓰기: .arena-text-ko .char-* 보다 specificity 높게 → width 적용 보장 */
+.arena-text-ko .char-space-ko {
+  width: 0.5em;
+}
+
+/* ── 글자 상태 색상 ───────────────────────────────────────── */
+.char-pending   { color: #d1d5db; }
+.char-correct   { color: #7c3aed; }
+.char-wrong     { color: #ef4444; background: #fee2e2; border-radius: 3px; }
+.char-composing {
+  color: #7c3aed;
+  border-bottom: 2px solid #7c3aed;
+  opacity: 0.6;
+}
+.char-cursor {
+  color: #d1d5db;
+  border-left: 2.5px solid #7c3aed;
+  animation: blink 0.9s step-end infinite;
+  margin-left: 1px;
+}
+@keyframes blink {
+  0%, 100% { border-color: #7c3aed; }
+  50%       { border-color: transparent; }
+}
+
+/* ── Hidden input (keydown 캡처 전용) ────────────────────── */
+.arena-input-hidden {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+/* ── 안내 텍스트 ─────────────────────────────────────────── */
+.practice-hint {
+  text-align: center;
+  font-size: 13px;
+  color: #9ca3af;
 }

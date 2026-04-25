@@ -1,121 +1,154 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { getRandomText } from '../data/texts';
+import { useTypingEngine } from '../hooks/useTypingEngine';
 import './Typing.css';
 
-const SAMPLE_TEXTS = [
-  '빠른 갈색 여우가 게으른 개를 뛰어넘었습니다.',
-  '타이핑 연습을 통해 빠르고 정확하게 입력하는 습관을 만들어보세요.',
-  '포도봉 포도알이 포도밭에서 포도를 따고 있습니다.',
-  '하늘을 나는 새처럼 자유롭게 타이핑을 즐겨봅시다.',
-  '오늘도 열심히 타이핑 연습을 하여 실력을 키워봅시다.',
-];
-
 const Typing: React.FC = () => {
-  const [currentText] = useState(() => SAMPLE_TEXTS[Math.floor(Math.random() * SAMPLE_TEXTS.length)]);
-  const [input, setInput] = useState('');
-  const [startTime, setStartTime] = useState<number | null>(null);
-  const [wpm, setWpm] = useState(0);
-  const [accuracy, setAccuracy] = useState(100);
-  const [finished, setFinished] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [lang, setLang]               = useState<'ko' | 'en'>('ko');
+  const [text, setText]               = useState(() => getRandomText('ko'));
+  const [sentencesDone, setSentencesDone] = useState(0);
+  const [liveCpm, setLiveCpm]         = useState(0);
 
-  useEffect(() => {
-    inputRef.current?.focus();
+  // 첫 키 입력 시점 (CPM 계산 기준)
+  const sessionStartRef = useRef<number>(0);
+  const hasStartedRef   = useRef(false);
+
+  // lang stale closure 방지
+  const langRef = useRef<'ko' | 'en'>('ko');
+  useEffect(() => { langRef.current = lang; }, [lang]);
+
+  // 문장 완료: 카운트 증가 + 다음 문장 로드
+  // useTypingEngine은 text가 바뀌어도 totalCorrect/totalTyped를 리셋하지 않으므로
+  // 세션 누적 정확도·CPM은 hook 반환값 그대로 사용 가능
+  const handleComplete = useCallback(() => {
+    setSentencesDone(n => n + 1);
+    setText(getRandomText(langRef.current));
   }, []);
 
-  const calcStats = useCallback((typed: string) => {
-    if (!startTime) return;
-    const elapsed = (Date.now() - startTime) / 1000 / 60;
-    const words = typed.length / 5;
-    setWpm(Math.round(words / elapsed));
+  const {
+    inputRef,
+    handleKeyDown: engineKeyDown,
+    getSyllableDisplay,
+    totalCorrect,
+    totalTyped,
+    accuracy,
+    frame,
+    reset,
+  } = useTypingEngine({ text, active: true, onComplete: handleComplete });
 
-    let correct = 0;
-    for (let i = 0; i < typed.length; i++) {
-      if (typed[i] === currentText[i]) correct++;
-    }
-    setAccuracy(typed.length > 0 ? Math.round((correct / typed.length) * 100) : 100);
-  }, [startTime, currentText]);
+  // 첫 입력 시 타이머 시작, 이후 엔진에 위임
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (!hasStartedRef.current && e.key !== 'Backspace') {
+        hasStartedRef.current = true;
+        sessionStartRef.current = Date.now();
+      }
+      engineKeyDown(e);
+    },
+    [engineKeyDown],
+  );
 
-  const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    if (!startTime && val.length > 0) setStartTime(Date.now());
+  // 실시간 세션 CPM (totalCorrect는 문장 간 누적값)
+  useEffect(() => {
+    if (!sessionStartRef.current) return;
+    const elapsed = (Date.now() - sessionStartRef.current) / 1000 / 60;
+    if (elapsed < 0.01) return;
+    setLiveCpm(Math.round(totalCorrect / elapsed));
+  }, [totalCorrect]);
 
-    setInput(val);
-    calcStats(val);
+  // 마운트 시 포커스
+  useEffect(() => {
+    setTimeout(() => inputRef.current?.focus(), 50);
+  }, []);
 
-    if (val === currentText) {
-      setFinished(true);
-    }
+  // 언어 전환: 세션 초기화
+  const handleLangChange = (newLang: 'ko' | 'en') => {
+    if (newLang === lang) return;
+    reset();
+    setLang(newLang);
+    setText(getRandomText(newLang));
+    setSentencesDone(0);
+    setLiveCpm(0);
+    hasStartedRef.current = false;
+    sessionStartRef.current = 0;
+    setTimeout(() => inputRef.current?.focus(), 50);
   };
 
-  const reset = () => {
-    setInput('');
-    setStartTime(null);
-    setWpm(0);
-    setAccuracy(100);
-    setFinished(false);
-    inputRef.current?.focus();
-  };
+  const charLevel = liveCpm >= 400 ? 3 : liveCpm >= 200 ? 2 : 1;
+  const charSrc   = `/typing/character_typing_${charLevel}-${frame}.png`;
+  const isKorean  = lang === 'ko';
 
   return (
     <div className="typing-page">
-      <div className="typing-container">
-        <div className="typing-card">
-          <h2 className="typing-title">타이핑 연습</h2>
+      <div className="practice-arena">
 
-          {/* Stats bar */}
-          <div className="typing-stats">
-            <div className="stat-item">
-              <span className="stat-label">WPM</span>
-              <span className="stat-value purple">{wpm}</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-label">정확도</span>
-              <span className="stat-value">{accuracy}%</span>
-            </div>
+        {/* ── 상단 바: CPM | 언어 선택 + 문장 번호 | 정확도 ── */}
+        <div className="practice-topbar">
+          <div className="practice-stat">
+            <span className="practice-stat-label">CPM</span>
+            <span className="practice-stat-value" style={{ color: '#7c3aed' }}>{liveCpm}</span>
           </div>
 
-          {/* Text display */}
-          <div className="typing-text-wrap">
-            {currentText.split('').map((char, i) => {
-              let cls = 'char-pending';
-              if (i < input.length) {
-                cls = input[i] === char ? 'char-correct' : 'char-wrong';
-              } else if (i === input.length) {
-                cls = 'char-cursor';
-              }
-              return (
-                <span key={i} className={cls}>
-                  {char}
-                </span>
-              );
-            })}
+          <div className="practice-center">
+            <div className="practice-lang-toggle">
+              <button
+                className={`practice-lang-btn${lang === 'ko' ? ' active' : ''}`}
+                onClick={() => handleLangChange('ko')}
+              >
+                한국어
+              </button>
+              <button
+                className={`practice-lang-btn${lang === 'en' ? ' active' : ''}`}
+                onClick={() => handleLangChange('en')}
+              >
+                English
+              </button>
+            </div>
+            <span className="practice-sentence-num">{sentencesDone + 1}번째 문장</span>
           </div>
 
-          {/* Input */}
-          <input
-            ref={inputRef}
-            className="typing-input"
-            value={input}
-            onChange={handleInput}
-            disabled={finished}
-            placeholder="여기에 타이핑하세요..."
-            autoComplete="off"
-            spellCheck={false}
-          />
-
-          {finished && (
-            <div className="typing-result">
-              <p className="result-text">완료! 🎉</p>
-              <p className="result-stats">{wpm} WPM · 정확도 {accuracy}%</p>
-              <button className="result-btn" onClick={reset}>다시 시작</button>
-            </div>
-          )}
+          <div className="practice-stat">
+            <span className="practice-stat-label">정확도</span>
+            <span className="practice-stat-value">
+              {totalTyped > 0 ? accuracy : 100}%
+            </span>
+          </div>
         </div>
 
-        <div className="typing-mascot-area">
-          <img src="/logo_nbg.png" alt="logo" className="typing-mascot" />
-          <p className="typing-mascot-msg">화이팅!</p>
+        {/* ── 캐릭터 ── */}
+        <div className="arena-character">
+          <img src={charSrc} alt="character" className="arena-character-img" />
         </div>
+
+        {/* ── 타이핑 대상 문장 ── */}
+        <div
+          className={`arena-text${isKorean ? ' arena-text-ko' : ''}`}
+          onClick={() => inputRef.current?.focus()}
+        >
+          {text.split('').map((char, i) => {
+            const { cls, char: displayChar } = getSyllableDisplay(i, char);
+            const spaceCls = char === ' ' && isKorean ? ' char-space-ko' : '';
+            return (
+              <span key={i} className={`char-${cls}${spaceCls}`}>
+                {displayChar}
+              </span>
+            );
+          })}
+        </div>
+
+        {/* keydown 캡처용 hidden input */}
+        <input
+          ref={inputRef}
+          className="arena-input-hidden"
+          onKeyDown={handleKeyDown}
+          readOnly
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
+        />
+
+        <p className="practice-hint">클릭하거나 바로 타이핑을 시작하세요</p>
       </div>
     </div>
   );
