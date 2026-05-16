@@ -10,7 +10,6 @@
 
 import {
   decomposeText,
-  composePartialJamos,
   isKoreanJamo,
   KOREAN_KEY_TO_JAMO,
   CODE_TO_QWERTY,
@@ -129,24 +128,14 @@ export class TypingEngine {
   getSyllableDisplay(charIndex: number, targetChar: string): { cls: string; char: string } {
     const range = this._jamoInfo.syllableRanges[charIndex];
 
-    if (this._jamoPos >= range.end) return { cls: 'correct', char: targetChar };
-    if (this._jamoPos < range.start)  return { cls: 'pending', char: targetChar };
+    if (this._jamoPos >= range.end)  return { cls: 'correct',   char: targetChar };
+    if (this._jamoPos < range.start) return { cls: 'pending',   char: targetChar };
+    if (this._hasError)              return { cls: 'wrong',     char: targetChar };
+    if (this._jamoPos === range.start) return { cls: 'cursor',  char: targetChar };
 
-    if (this._hasError) {
-      if (targetChar === ' ') return { cls: 'wrong', char: ' ' };
-      if (this._jamoPos > range.start) {
-        const correctJamos = this._jamoInfo.jamoSequence.slice(range.start, this._jamoPos);
-        const before       = composePartialJamos(correctJamos);
-        const composed     = composePartialJamos([...correctJamos, this._wrongTyped]);
-        return { cls: 'wrong', char: composed !== before ? composed : this._wrongTyped };
-      }
-      return { cls: 'wrong', char: this._wrongTyped || targetChar };
-    }
-
-    if (this._jamoPos === range.start) return { cls: 'cursor', char: targetChar };
-
-    const typedJamos = this._jamoInfo.jamoSequence.slice(range.start, this._jamoPos);
-    return { cls: 'composing', char: composePartialJamos(typedJamos) };
+    // composing: 항상 targetChar 표시 — 부분 자모(ㄱ vs 가)의 시각 크기 차이로 인한
+    // 레이아웃 밀림 방지. 진행 상태는 border-bottom 언더라인(char-composing)으로 전달.
+    return { cls: 'composing', char: targetChar };
   }
 
   /* ── 점수 계산 ──────────────────────────────────────────────
