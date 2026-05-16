@@ -1,76 +1,174 @@
 /* =============================================================
    Typing Practice Page
-   arena-text / arena-character / arena-input-hidden 등
-   BattleArena와 동일한 클래스명을 재사용하므로 해당 스타일을
-   이 파일에 독립적으로 선언함 (Battle.css 의존 없음)
 ============================================================= */
 
-/* ── 페이지 래퍼 ─────────────────────────────────────────── */
+/* ── 페이지 ─────────────────────────────────────────────── */
 .typing-page {
   min-height: calc(100vh - 56px);
-  background: linear-gradient(160deg, #f5f3ff 0%, #ede9fe 40%, #e0d9fb 100%);
+  background: var(--gray-100);
 }
 
-/* ── 메인 컨테이너 ───────────────────────────────────────── */
-.practice-arena {
-  max-width: 860px;
+/* ── 웨이브 헤더 ─────────────────────────────────────────── */
+.typing-header {
+  background: var(--purple-primary);
+  height: 72px;
+  position: relative;
+}
+.typing-header-wave {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 48px;
+}
+.typing-wave-svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── 컨테이너 ────────────────────────────────────────────── */
+.typing-container {
+  max-width: 900px;
   margin: 0 auto;
-  padding: 40px 24px;
+  padding: 24px 24px 48px;
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 24px;
 }
 
-/* ── 상단 바 ─────────────────────────────────────────────── */
-.practice-topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+/* ── 공용 카드 ───────────────────────────────────────────── */
+.mode-card,
+.practice-card,
+.activity-card {
   background: #fff;
   border-radius: 20px;
-  padding: 20px 36px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
 }
 
-/* 좌·우 통계 (CPM, 정확도) */
-.practice-stat {
+/* ── 모드 선택 카드 ──────────────────────────────────────── */
+.mode-card {
+  padding: 28px 32px;
+}
+.mode-options {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 4px;
-  min-width: 80px;
-}
-.practice-stat-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #9ca3af;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.practice-stat-value {
-  font-size: 36px;
-  font-weight: 800;
-  color: #1f2937;
-  line-height: 1;
-}
-
-/* 가운데: 언어 토글 + 문장 번호 */
-.practice-center {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  justify-content: center;
   gap: 8px;
+  flex-wrap: wrap;
+}
+.mode-bracket {
+  font-size: 44px;
+  font-weight: 700;
+  color: var(--purple-primary);
+  line-height: 1;
+  padding: 0 4px;
+  flex-shrink: 0;
+}
+.mode-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 88px;
+  height: 72px;
+  border-radius: 14px;
+  background: var(--gray-100);
+  border: 2px solid transparent;
+  gap: 2px;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+  flex-shrink: 0;
+}
+.mode-btn:hover {
+  background: var(--purple-bg);
+  border-color: var(--purple-lighter);
+}
+.mode-btn.active {
+  background: var(--purple-bg);
+  border-color: var(--purple-primary);
+  box-shadow: 0 4px 12px rgba(135, 88, 255, 0.18);
+}
+.mode-btn-line {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  line-height: 1.4;
+}
+.mode-btn.active .mode-btn-line {
+  color: var(--purple-dark);
 }
 
+/* ── 연습 카드 ───────────────────────────────────────────── */
+.practice-card {
+  min-height: 280px;
+  display: flex;
+  align-items: stretch;
+}
+
+/* idle */
+.practice-idle {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 48px 32px;
+}
+.idle-desc {
+  font-size: 16px;
+  font-weight: 500;
+  color: #6b7280;
+}
+.idle-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* countdown */
+.practice-countdown {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px;
+}
+
+/* playing */
+.practice-playing {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 28px 32px;
+}
+
+/* result */
+.practice-result {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  padding: 48px 32px;
+}
+
+/* ── 언어 토글 (idle + 카드 내부) ───────────────────────── */
 .practice-lang-toggle {
   display: flex;
-  background: #f3f4f6;
+  background: var(--gray-100);
   border-radius: 10px;
   padding: 3px;
   gap: 2px;
 }
 .practice-lang-btn {
-  padding: 6px 18px;
+  padding: 7px 20px;
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
@@ -80,50 +178,128 @@
 }
 .practice-lang-btn.active {
   background: #fff;
-  color: #7c3aed;
-  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.15);
+  color: var(--purple-primary);
+  box-shadow: 0 2px 8px rgba(135, 88, 255, 0.15);
 }
-.practice-lang-btn:not(.active):hover {
-  color: #7c3aed;
+.practice-lang-btn:not(.active):hover { color: var(--purple-primary); }
+
+/* ── 시간 선택 ───────────────────────────────────────────── */
+.practice-duration-row {
+  display: flex;
+  gap: 6px;
+}
+.practice-duration-btn {
+  padding: 8px 22px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #6b7280;
+  background: var(--gray-100);
+  border: 2px solid transparent;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.practice-duration-btn.active {
+  color: var(--purple-primary);
+  background: var(--purple-bg);
+  border-color: var(--purple-primary);
+}
+.practice-duration-btn:not(.active):hover {
+  color: var(--purple-primary);
+  background: var(--purple-bg);
 }
 
-.practice-sentence-num {
-  font-size: 12px;
+/* ── 시작 / 다시 도전 버튼 ───────────────────────────────── */
+.practice-start-btn {
+  padding: 14px 48px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--purple-primary);
+  box-shadow: 0 4px 16px rgba(135, 88, 255, 0.3);
+  transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+.practice-start-btn:hover {
+  background: var(--purple-light);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(135, 88, 255, 0.4);
+}
+.practice-start-btn:active { transform: translateY(0); }
+
+/* ── 카운트다운 공용 (Battle과 공유) ──────────────────────── */
+.countdown-number {
+  font-size: 100px;
+  font-weight: 900;
+  color: var(--purple-primary);
+  line-height: 1;
+  animation: countPop 0.4s ease;
+}
+@keyframes countPop {
+  0%   { transform: scale(1.5); opacity: 0; }
+  100% { transform: scale(1);   opacity: 1; }
+}
+.countdown-sub {
+  font-size: 15px;
+  color: #6b7280;
   font-weight: 500;
-  color: #9ca3af;
 }
 
-/* ── 캐릭터 ──────────────────────────────────────────────── */
-/* Battle.css와 동일 — 독립 선언 */
-.arena-character {
+/* ── Playing: 상단 바 ────────────────────────────────────── */
+.playing-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.playing-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 72px;
+}
+.playing-stat-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.playing-stat-value {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--gray-800);
+  line-height: 1;
+}
+.playing-timer-wrap { display: flex; align-items: center; }
+.playing-timer-svg  { width: 72px; height: 72px; }
+
+/* ── 캐릭터 스프라이트 ───────────────────────────────────── */
+.playing-character {
   display: flex;
   justify-content: center;
-  margin-bottom: 8px;
 }
-.arena-character-img {
-  width: 120px;
-  height: 120px;
+.playing-character-img {
+  width: 100px;
+  height: 100px;
   object-fit: contain;
-  image-rendering: auto;
 }
 
 /* ── 타이핑 텍스트 박스 ───────────────────────────────────── */
 .arena-text {
-  background: #fff;
-  border-radius: 20px;
-  padding: 32px;
-  font-size: 22px;
+  background: var(--gray-100);
+  border-radius: 16px;
+  padding: 24px 28px;
+  font-size: 20px;
   line-height: 2.2;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   cursor: text;
   user-select: none;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
   word-break: break-all;
   overflow-wrap: break-word;
   white-space: pre-wrap;
 }
 
-/* ── 한국어 구간: 자모↔음절 폭·높이 차이로 인한 밀림 방지 ── */
+/* 한국어 구간: 자모↔음절 폭 차이 방지 */
 .arena-text-ko .char-pending,
 .arena-text-ko .char-correct,
 .arena-text-ko .char-wrong,
@@ -135,12 +311,8 @@
   vertical-align: middle;
   line-height: 1;
 }
-
-/* 한국어 커서: border-left는 박스 폭 증가 → ::before 절대 위치로 독립 제어 */
 .arena-text-ko .char-cursor {
   border-left: none;
-  margin-left: 0;
-  animation: none;
   position: relative;
 }
 .arena-text-ko .char-cursor::before {
@@ -150,40 +322,32 @@
   top: 0;
   height: 100%;
   width: 2px;
-  background: #7c3aed;
+  background: var(--purple-primary);
   animation: blink-ko 0.9s step-end infinite;
 }
 @keyframes blink-ko {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0; }
 }
+.arena-text-ko .char-space-ko { width: 0.5em; }
 
-/* 띄어쓰기: .arena-text-ko .char-* 보다 specificity 높게 → width 적용 보장 */
-.arena-text-ko .char-space-ko {
-  width: 0.5em;
-}
-
-/* ── 글자 상태 색상 ───────────────────────────────────────── */
+/* 글자 상태 색상 */
 .char-pending   { color: #d1d5db; }
-.char-correct   { color: #7c3aed; }
+.char-correct   { color: var(--purple-primary); }
 .char-wrong     { color: #ef4444; background: #fee2e2; border-radius: 3px; }
-.char-composing {
-  color: #7c3aed;
-  border-bottom: 2px solid #7c3aed;
-  opacity: 0.6;
-}
-.char-cursor {
+.char-composing { color: var(--purple-primary); border-bottom: 2px solid var(--purple-primary); opacity: 0.6; }
+.char-cursor    {
   color: #d1d5db;
-  border-left: 2.5px solid #7c3aed;
+  border-left: 2.5px solid var(--purple-primary);
   animation: blink 0.9s step-end infinite;
   margin-left: 1px;
 }
 @keyframes blink {
-  0%, 100% { border-color: #7c3aed; }
+  0%, 100% { border-color: var(--purple-primary); }
   50%       { border-color: transparent; }
 }
 
-/* ── Hidden input (keydown 캡처 전용) ────────────────────── */
+/* hidden input */
 .arena-input-hidden {
   position: absolute;
   opacity: 0;
@@ -192,9 +356,170 @@
   pointer-events: none;
 }
 
-/* ── 안내 텍스트 ─────────────────────────────────────────── */
-.practice-hint {
-  text-align: center;
+/* ── 결과 ────────────────────────────────────────────────── */
+.result-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.result-stats-row {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+.result-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.result-stat-value {
+  font-size: 52px;
+  font-weight: 800;
+  color: var(--gray-800);
+  line-height: 1;
+}
+.result-stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+.result-stat-divider {
+  width: 1px;
+  height: 52px;
+  background: var(--gray-200);
+}
+.result-errors {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.result-errors-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.result-errors-row { display: flex; gap: 10px; }
+.result-error-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: #fef2f2;
+  border: 1.5px solid #fecaca;
+  border-radius: 12px;
+  padding: 12px 20px;
+}
+.result-error-jamo  { font-size: 26px; font-weight: 800; color: #ef4444; }
+.result-error-count { font-size: 12px; font-weight: 600; color: #f87171; }
+
+/* ── 활동 카드 ───────────────────────────────────────────── */
+.activity-card {
+  padding: 24px 28px;
+}
+.activity-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.activity-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--gray-800);
+}
+.activity-login-hint {
+  font-size: 12px;
+  color: #9ca3af;
+}
+.activity-login-link {
+  color: var(--purple-primary);
+  font-weight: 600;
+  text-decoration: underline;
+  background: none;
+}
+.activity-content {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+}
+.activity-bars {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  height: 140px;
+  position: relative;
+}
+.activity-bar-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.activity-bar {
+  width: 100%;
+  min-height: 4px;
+  background: linear-gradient(180deg, var(--purple-primary) 0%, var(--purple-lighter) 100%);
+  border-radius: 4px 4px 0 0;
+  transition: height 0.4s ease;
+}
+.activity-bar-label {
+  font-size: 10px;
+  color: #9ca3af;
+  white-space: nowrap;
+}
+.activity-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 13px;
   color: #9ca3af;
+  font-weight: 500;
+}
+.activity-mascot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.mascot-img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+}
+.mascot-bubble {
+  background: var(--purple-primary);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+  max-width: 110px;
+  white-space: pre-line;
+  position: relative;
+}
+.mascot-bubble::before {
+  content: '';
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-bottom-color: var(--purple-primary);
 }

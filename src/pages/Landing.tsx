@@ -102,41 +102,6 @@ function useCounter(target: number, duration = 1600, start = false) {
   return value;
 }
 
-// 루프 타이핑 (타입 → 일시정지 → 삭제 → 다음 문장)
-function useCyclingTypewriter(
-  phrases: string[],
-  { speed = 80, deleteSpeed = 40, pause = 2200, startDelay = 0 } = {},
-) {
-  const [displayed, setDisplayed] = useState('');
-  const [phraseIdx, setPhraseIdx] = useState(0);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [started, setStarted] = useState(false);
-
-  useEffect(() => {
-    const t = setTimeout(() => setStarted(true), startDelay);
-    return () => clearTimeout(t);
-  }, [startDelay]);
-
-  useEffect(() => {
-    if (!started) return;
-    const current = phrases[phraseIdx];
-    let timeout: ReturnType<typeof setTimeout>;
-    if (!isDeleting && displayed.length < current.length) {
-      timeout = setTimeout(() => setDisplayed(current.slice(0, displayed.length + 1)), speed);
-    } else if (!isDeleting && displayed.length === current.length) {
-      timeout = setTimeout(() => setIsDeleting(true), pause);
-    } else if (isDeleting && displayed.length > 0) {
-      timeout = setTimeout(() => setDisplayed(displayed.slice(0, -1)), deleteSpeed);
-    } else {
-      setIsDeleting(false);
-      setPhraseIdx(i => (i + 1) % phrases.length);
-    }
-    return () => clearTimeout(timeout);
-  }, [displayed, isDeleting, phraseIdx, started, phrases, speed, deleteSpeed, pause]);
-
-  return displayed;
-}
-
 /* ── Components ─────────────────────────────────────────── */
 
 // 인트로 오버레이: "Typers" 타이핑 → 보라 플래시 → 사라짐
@@ -146,6 +111,8 @@ const IntroOverlay: React.FC<{ onDone: () => void }> = ({ onDone }) => {
   const [text, setText] = useState('');
   const [phase, setPhase] = useState<IntroPhase>('typing');
   const TARGET = 'Typers';
+  const onDoneRef = useRef(onDone);
+  onDoneRef.current = onDone;
 
   useEffect(() => {
     let i = 0;
@@ -156,11 +123,11 @@ const IntroOverlay: React.FC<{ onDone: () => void }> = ({ onDone }) => {
         clearInterval(iv);
         setTimeout(() => setPhase('flash'), 600);
         setTimeout(() => setPhase('done'), 950);
-        setTimeout(onDone, 1200);
+        setTimeout(() => onDoneRef.current(), 1200);
       }
     }, 110);
     return () => clearInterval(iv);
-  }, [onDone]);
+  }, []);
 
   if (phase === 'done') return null;
   return (
@@ -223,7 +190,9 @@ const TypingDemo: React.FC<{ started: boolean }> = ({ started }) => {
     return () => clearTimeout(t);
   }, [started, stepIdx, steps]);
 
-  const currentDisplay = stepIdx > 0 ? steps[Math.min(stepIdx, steps.length) - 1].displayUpTo : '';
+  const currentDisplay = steps.length > 0
+    ? steps[Math.min(stepIdx, steps.length - 1)].displayUpTo
+    : '';
   const remaining = sentence.slice(currentDisplay.length);
 
   return (
@@ -270,17 +239,11 @@ const FeatureCard: React.FC<{
 };
 
 /* ── Landing page ────────────────────────────────────────── */
-const HERO_PHRASES = ['타이핑을 다시 설레게', '빠르게, 그리고 정확하게', '매일 조금씩 성장해요', '틀려도 괜찮아요'];
-
 const Landing: React.FC = () => {
   const navigate = useNavigate();
   const [introComplete, setIntroComplete] = useState(false);
   const [heroVisible,   setHeroVisible]   = useState(false);
   const [statsRef, statsInView] = useInView(0.3);
-
-  const typedPhrase = useCyclingTypewriter(HERO_PHRASES, {
-    speed: 65, deleteSpeed: 32, pause: 2200, startDelay: 150,
-  });
 
   // Hero content fades in shortly after intro finishes
   useEffect(() => {
@@ -335,12 +298,6 @@ const Landing: React.FC = () => {
             <button className="l-btn-ghost" onClick={() => navigate('/typing')}>
               데모 보기
             </button>
-          </div>
-
-          {/* 타이핑 문구 루프 */}
-          <div className={`l-hero-typerow${heroVisible ? ' l-hero-typerow-visible' : ''}`}>
-            <span className="l-hero-typephrase">{typedPhrase}</span>
-            <span className="l-hero-typecursor">│</span>
           </div>
 
           {/* 두벌식 키보드 데모 */}

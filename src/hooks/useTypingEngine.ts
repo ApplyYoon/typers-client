@@ -52,6 +52,17 @@ export interface UseTypingEngineReturn {
    */
   frame: 1 | 2;
   /**
+   * 세션 내 자모(또는 영문자)별 오타 횟수.
+   * key: 기대했던 자모/글자, value: 틀린 횟수.
+   * AI 약점 분석에 그대로 전달 가능.
+   */
+  errorLog: Record<string, number>;
+  /**
+   * 현재 errorLog의 최신 스냅샷을 동기적으로 반환.
+   * 타이머 종료 시점처럼 stale closure 위험이 있는 곳에서 사용.
+   */
+  getErrorLog: () => Record<string, number>;
+  /**
    * text prop이 바뀌면 자동으로 내부 상태를 리셋하지만,
    * 같은 text로 처음부터 다시 시작하고 싶을 때 수동 호출.
    */
@@ -85,10 +96,12 @@ export function useTypingEngine({ text, active, onComplete }: Options): UseTypin
   const [totalCorrect, setTotalCorrect] = useState(0);
   const [totalTyped, setTotalTyped]   = useState(0);
   const [frame, setFrame]             = useState<1 | 2>(1);
+  const [errorLog, setErrorLog]       = useState<Record<string, number>>({});
 
-  // doFinish / getScore에서 stale closure 없이 최신값 읽기 위한 ref 병렬 추적
+  // stale closure 없이 최신값 읽기 위한 ref 병렬 추적
   const totalCorrectRef = useRef(0);
   const totalTypedRef   = useRef(0);
+  const errorLogRef     = useRef<Record<string, number>>({});
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -113,7 +126,12 @@ export function useTypingEngine({ text, active, onComplete }: Options): UseTypin
     totalCorrectRef.current = 0;
     totalTypedRef.current   = 0;
     setFrame(1);
+    errorLogRef.current = {};
+    setErrorLog({});
   }, []);
+
+  // ── errorLog 동기 읽기 ────────────────────────────────────────
+  const getErrorLog = useCallback((): Record<string, number> => errorLogRef.current, []);
 
   // ── 최종 점수 계산 ────────────────────────────────────────────
   const getScore = useCallback((startTimeMs: number): TypingScore => {
@@ -185,6 +203,9 @@ export function useTypingEngine({ text, active, onComplete }: Options): UseTypin
       // ── 오타 ────────────────────────────────────────────────
       setHasError(true);
       setWrongTyped(typed);
+      const next = { ...errorLogRef.current, [expected]: (errorLogRef.current[expected] ?? 0) + 1 };
+      errorLogRef.current = next;
+      setErrorLog(next);
     }
   }, [active, hasError, jamoInfo, jamoPos]);
 
@@ -239,6 +260,8 @@ export function useTypingEngine({ text, active, onComplete }: Options): UseTypin
     totalTyped,
     accuracy,
     frame,
+    errorLog,
+    getErrorLog,
     reset,
     getScore,
   };

@@ -8,13 +8,20 @@ dist/
 dist-ssr/
 build/
 
-# Environment variables (sensitive)
+# Environment variables — never commit actual .env files
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 .env*.local
+backend/.env
+backend/.env.*
+!backend/.env.example
+!.env.example
+
+# Claude Code auto-memory
+.claude/
 
 # Logs
 npm-debug.log*
