@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import String, DateTime
+from sqlalchemy import String, DateTime, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
@@ -15,5 +15,7 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
+    level: Mapped[int] = mapped_column(Integer, default=0)        # 0~4
+    initial_cpm: Mapped[int] = mapped_column(Integer, default=0)  # 레벨테스트 측정값
 
     sessions: Mapped[list["PracticeSession"]] = relationship(back_populates="user")  # noqa: F821

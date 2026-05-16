@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import LevelTest from './pages/LevelTest';
 import Ranking from './pages/Ranking';
 import Profile from './pages/Profile';
 import Custom from './pages/Custom';
@@ -31,6 +32,7 @@ const App: React.FC = () => {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/level-test" element={<LevelTest />} />
         <Route
           path="/ranking"
           element={

@@ -36,5 +36,12 @@ class UserResponse(BaseModel):
     id: str
     username: str
     email: str
+    level: int
+    initial_cpm: int
 
     model_config = {"from_attributes": True}
+
+
+class LevelUpdateRequest(BaseModel):
+    level: int
+    initial_cpm: int

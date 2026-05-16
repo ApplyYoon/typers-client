@@ -4,7 +4,7 @@ from sqlalchemy import select
 
 from app.deps import get_db, get_current_user
 from app.models.user import User
-from app.schemas.auth import RegisterRequest, LoginRequest, TokenResponse, UserResponse
+from app.schemas.auth import RegisterRequest, LoginRequest, TokenResponse, UserResponse, LevelUpdateRequest
 from app.core.security import hash_password, verify_password, create_access_token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -46,4 +46,17 @@ async def login(body: LoginRequest, db: AsyncSession = Depends(get_db)):
 
 @router.get("/me", response_model=UserResponse)
 async def me(current_user: User = Depends(get_current_user)):
+    return current_user
+
+
+@router.patch("/level", response_model=UserResponse)
+async def update_level(
+    body: LevelUpdateRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    current_user.level = body.level
+    current_user.initial_cpm = body.initial_cpm
+    await db.commit()
+    await db.refresh(current_user)
     return current_user

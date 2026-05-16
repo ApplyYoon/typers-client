@@ -8,8 +8,7 @@ const Register: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    localStorage.setItem('typers_auth', 'true');
-    navigate('/home');
+    navigate('/level-test');
   };
 
   return (
