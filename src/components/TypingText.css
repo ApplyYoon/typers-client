@@ -7,17 +7,13 @@
 ============================================================= */
 
 /* ── 한국어 고정폭 ───────────────────────────────────────────
-   자모(ㅂ, 1자모)와 음절(봄, 3자모)의 폭 차이로 인한 레이아웃 밀림 방지.
-   영어 구간은 자연 가변폭 유지를 위해 .typing-text--ko 하위에서만 적용. */
+   display/width/text-align/vertical-align은 TypingText.tsx 인라인 스타일로 처리.
+   line-height만 CSS로 보정. */
 .typing-text--ko .char-pending,
 .typing-text--ko .char-correct,
 .typing-text--ko .char-wrong,
 .typing-text--ko .char-composing,
 .typing-text--ko .char-cursor {
-  display: inline-block;
-  width: 1em;
-  text-align: center;
-  vertical-align: middle;
   line-height: 1;
 }
 
@@ -41,7 +37,6 @@
   50%       { opacity: 0; }
 }
 
-.typing-text--ko .char-space { width: 0.5em; }
 
 /* ── 글자 상태 색상 (라이트 기본) ───────────────────────────── */
 .char-pending   { color: #d1d5db; }
