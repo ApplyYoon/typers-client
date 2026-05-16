@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { authApi, saveToken } from '../api/auth';
+import { authApi } from '../api/auth';
 import { ApiError } from '../api/client';
+import { useAuth } from '../context/AuthContext';
 import './Auth.css';
 
 const Register: React.FC = () => {
@@ -9,6 +10,7 @@ const Register: React.FC = () => {
   const [error, setError]   = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { setUser } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,8 +23,8 @@ const Register: React.FC = () => {
 
     setLoading(true);
     try {
-      const data = await authApi.register(form.username, form.email, form.password);
-      saveToken(data.access_token);
+      const user = await authApi.register(form.username, form.email, form.password);
+      setUser(user);
       navigate('/level-test');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : '오류가 발생했습니다');

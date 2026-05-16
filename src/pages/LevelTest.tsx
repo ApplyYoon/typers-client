@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useTypingEngine } from '../hooks/useTypingEngine';
 import { getPracticeText } from '../data/texts';
 import TypingText from '../components/TypingText';
-import { authApi, getToken } from '../api/auth';
+import { authApi } from '../api/auth';
+import { useAuth } from '../context/AuthContext';
 import './LevelTest.css';
 
 type Phase = 'intro' | 'keyboard' | 'speed-intro' | 'speed' | 'result';
@@ -71,6 +72,7 @@ function calcLevel(keyboardAcc: number, cpm: number): number {
 
 const LevelTest: React.FC = () => {
   const navigate = useNavigate();
+  const { user, setUser } = useAuth();
   const [phase, setPhase] = useState<Phase>('intro');
 
   // ── 자판 암기 테스트 ─────────────────────────────────────────
@@ -170,11 +172,12 @@ const LevelTest: React.FC = () => {
 
   const handleComplete = async () => {
     localStorage.setItem('typers_level', String(level));
-    if (getToken()) {
+    if (user) {
       try {
-        await authApi.updateLevel(level, finalCpm);
+        const updated = await authApi.updateLevel(level, finalCpm);
+        setUser(updated);
       } catch {
-        // 서버 저장 실패해도 localStorage로 fallback
+        // 서버 저장 실패해도 localStorage fallback
       }
     }
     navigate('/home');

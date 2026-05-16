@@ -1,18 +1,33 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.deps import get_db, get_current_user
 from app.models.user import User
-from app.schemas.auth import RegisterRequest, LoginRequest, TokenResponse, UserResponse, LevelUpdateRequest
+from app.schemas.auth import RegisterRequest, LoginRequest, UserResponse, LevelUpdateRequest
 from app.core.security import hash_password, verify_password, create_access_token
+from app.core.config import settings
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
+_COOKIE_MAX_AGE = settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60  # seconds
 
-@router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
-async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
-    # 중복 확인
+
+def _set_auth_cookie(response: Response, token: str) -> None:
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        samesite="lax",
+        # secure=True  ← HTTPS 배포 시 주석 해제
+        secure=False,
+        max_age=_COOKIE_MAX_AGE,
+        path="/",
+    )
+
+
+@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+async def register(body: RegisterRequest, response: Response, db: AsyncSession = Depends(get_db)):
     dup = await db.execute(
         select(User).where((User.username == body.username) | (User.email == body.email))
     )
@@ -28,20 +43,26 @@ async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
     await db.commit()
     await db.refresh(user)
 
-    token = create_access_token(str(user.id))
-    return TokenResponse(access_token=token)
+    _set_auth_cookie(response, create_access_token(str(user.id)))
+    return user
 
 
-@router.post("/login", response_model=TokenResponse)
-async def login(body: LoginRequest, db: AsyncSession = Depends(get_db)):
+@router.post("/login", response_model=UserResponse)
+async def login(body: LoginRequest, response: Response, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).where(User.username == body.username))
     user = result.scalar_one_or_none()
 
     if not user or not verify_password(body.password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="아이디 또는 비밀번호가 올바르지 않습니다")
 
-    token = create_access_token(str(user.id))
-    return TokenResponse(access_token=token)
+    _set_auth_cookie(response, create_access_token(str(user.id)))
+    return user
+
+
+@router.post("/logout")
+async def logout(response: Response):
+    response.delete_cookie(key="access_token", path="/", samesite="lax")
+    return {"ok": True}
 
 
 @router.get("/me", response_model=UserResponse)

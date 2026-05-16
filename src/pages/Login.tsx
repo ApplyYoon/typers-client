@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { authApi, saveToken } from '../api/auth';
+import { authApi } from '../api/auth';
 import { ApiError } from '../api/client';
+import { useAuth } from '../context/AuthContext';
 import './Auth.css';
 
 const Login: React.FC = () => {
@@ -9,14 +10,15 @@ const Login: React.FC = () => {
   const [error, setError]     = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { setUser } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      const data = await authApi.login(form.username, form.password);
-      saveToken(data.access_token);
+      const user = await authApi.login(form.username, form.password);
+      setUser(user);
       navigate('/home');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : '오류가 발생했습니다');

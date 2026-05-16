@@ -4,6 +4,7 @@ import { getPracticeText, MODE_META, type TypingMode } from '../data/texts';
 import { useTypingEngine } from '../hooks/useTypingEngine';
 import TypingText from '../components/TypingText';
 import { savePracticeSession, getActivityData } from '../utils/practiceStorage';
+import { useAuth } from '../context/AuthContext';
 import './Typing.css';
 
 /* ── 타입 ─────────────────────────────────────────────────── */
@@ -37,11 +38,10 @@ const DURATIONS = [
   { label: '3분', seconds: 180 },
 ];
 
-const isLoggedIn = () => localStorage.getItem('typers_auth') === 'true';
-
 /* ── 컴포넌트 ─────────────────────────────────────────────── */
 
 const Typing: React.FC = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const [phase, setPhase]         = useState<Phase>('idle');
@@ -365,7 +365,7 @@ const Typing: React.FC = () => {
         <div className="activity-card">
           <div className="activity-header">
             <h3 className="activity-title">나의 활동</h3>
-            {!isLoggedIn() && (
+            {!user && (
               <span className="activity-login-hint">
                 로그인하면 기록이 저장됩니다 ·{' '}
                 <button className="activity-login-link" onClick={() => navigate('/login')}>
