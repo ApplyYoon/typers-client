@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { getPracticeText, MODE_META, type TypingMode } from '../data/texts';
 import { useTypingEngine } from '../hooks/useTypingEngine';
+import TypingText from '../components/TypingText';
 import { savePracticeSession, getActivityData } from '../utils/practiceStorage';
 import './Typing.css';
 
@@ -301,17 +302,13 @@ const Typing: React.FC = () => {
                 <img src={charSrc} alt="character" className="playing-character-img" />
               </div>
 
-              {/* 텍스트 */}
-              <div
-                className={`arena-text${isKo ? ' arena-text-ko' : ''}`}
+              <TypingText
+                text={text}
+                getSyllableDisplay={getSyllableDisplay}
+                isKorean={isKo}
+                className="arena-text"
                 onClick={() => inputRef.current?.focus()}
-              >
-                {text.split('').map((char, i) => {
-                  const { cls, char: d } = getSyllableDisplay(i, char);
-                  const sp = char === ' ' && isKo ? ' char-space-ko' : '';
-                  return <span key={i} className={`char-${cls}${sp}`}>{d}</span>;
-                })}
-              </div>
+              />
 
               <input
                 ref={inputRef}

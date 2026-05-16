@@ -299,62 +299,7 @@
   white-space: pre-wrap;
 }
 
-/* 한국어 구간: 자모↔음절 폭 차이 방지 */
-.arena-text-ko .char-pending,
-.arena-text-ko .char-correct,
-.arena-text-ko .char-wrong,
-.arena-text-ko .char-composing,
-.arena-text-ko .char-cursor {
-  display: inline-block;
-  width: 1em;
-  text-align: center;
-  vertical-align: middle;
-  line-height: 1;
-}
-.arena-text-ko .char-cursor {
-  border-left: none;
-  position: relative;
-}
-.arena-text-ko .char-cursor::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  width: 2px;
-  background: var(--purple-primary);
-  animation: blink-ko 0.9s step-end infinite;
-}
-@keyframes blink-ko {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0; }
-}
-.arena-text-ko .char-space-ko { width: 0.5em; }
-
-/* 글자 상태 색상 */
-.char-pending   { color: #d1d5db; }
-.char-correct   { color: var(--purple-primary); }
-.char-wrong     { color: #ef4444; background: #fee2e2; border-radius: 3px; }
-.char-composing { color: var(--purple-primary); border-bottom: 2px solid var(--purple-primary); opacity: 0.6; }
-.char-cursor    {
-  color: #d1d5db;
-  border-left: 2.5px solid var(--purple-primary);
-  animation: blink 0.9s step-end infinite;
-  margin-left: 1px;
-}
-@keyframes blink {
-  0%, 100% { border-color: var(--purple-primary); }
-  50%       { border-color: transparent; }
-}
-
-/* hidden input */
-.arena-input-hidden {
-  position: absolute;
-  opacity: 0;
-  width: 1px;
-  height: 1px;
-  pointer-events: none;
-}
+/* char-* 글자 상태, 한국어 고정폭, arena-input-hidden → TypingText.css 로 이동 */
 
 /* ── 결과 ────────────────────────────────────────────────── */
 .result-label {

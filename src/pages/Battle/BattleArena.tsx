@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { getRandomText, type Lang } from '../../data/texts';
 import { useTypingEngine } from '../../hooks/useTypingEngine';
+import TypingText from '../../components/TypingText';
 
 interface Props {
   lang: Lang;
@@ -201,20 +202,14 @@ const BattleArena: React.FC<Props> = ({ lang, onFinish }) => {
         <img src={charSrc} alt="character" className="arena-character-img" />
       </div>
 
-      {/* 목표 문장 — 음절 단위 색상 + 실제 입력 글자 표시
-          arena-text-ko: 한국어 구간에서만 고정 폭 적용 (자모↔음절 폭 차이 방지) */}
-      <div
-        className={`arena-text${phase === 'korean' ? ' arena-text-ko' : ''}`}
+      <TypingText
+        text={text}
+        getSyllableDisplay={getSyllableDisplay}
+        isKorean={phase === 'korean'}
+        className="arena-text"
         onClick={() => inputRef.current?.focus()}
-      >
-        {text.split('').map((char, i) => {
-          const { cls, char: displayChar } = getSyllableDisplay(i, char);
-          const spaceCls = char === ' ' && phase === 'korean' ? ' char-space-ko' : '';
-          return <span key={i} className={`char-${cls}${spaceCls}`}>{displayChar}</span>;
-        })}
-      </div>
+      />
 
-      {/* 숨겨진 입력창 — keydown 캡처 전용 */}
       <input
         ref={inputRef}
         className="arena-input-hidden"

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTypingEngine } from '../hooks/useTypingEngine';
 import { getPracticeText } from '../data/texts';
+import TypingText from '../components/TypingText';
 import './LevelTest.css';
 
 type Phase = 'intro' | 'keyboard' | 'speed-intro' | 'speed' | 'result';
@@ -246,21 +247,14 @@ const LevelTest: React.FC = () => {
             <div className="lt-timer">{timeLeft}<span>초</span></div>
             <div className="lt-live-cpm">{liveCpm} <span>CPM</span></div>
           </div>
-          <div className="lt-speed-text">
-            {speedText.split('').map((ch, i) => {
-              const { cls, char } = getSyllableDisplay(i, ch);
-              return (
-                <span
-                  key={i}
-                  className={`lt-char lt-char--${cls}`}
-                  style={{ width: ch === ' ' ? '0.4em' : '1em' }}
-                >
-                  {char === ' ' ? ' ' : char}
-                </span>
-              );
-            })}
-          </div>
-          <input ref={inputRef} className="lt-hidden-input" onKeyDown={handleKeyDown} readOnly />
+          <TypingText
+            text={speedText}
+            getSyllableDisplay={getSyllableDisplay}
+            isKorean
+            dark
+            className="lt-speed-text"
+          />
+          <input ref={inputRef} className="arena-input-hidden" onKeyDown={handleKeyDown} readOnly />
         </div>
       </div>
     );

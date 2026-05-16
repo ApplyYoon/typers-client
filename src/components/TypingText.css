@@ -1,0 +1,78 @@
+/* =============================================================
+   TypingText 공통 스타일
+   - char-* 글자 상태 색상
+   - .typing-text--ko 한국어 고정폭
+   - .typing-text--dark 어두운 배경 오버라이드
+   - .arena-input-hidden 공통 hidden input
+============================================================= */
+
+/* ── 한국어 고정폭 ───────────────────────────────────────────
+   자모(ㅂ, 1자모)와 음절(봄, 3자모)의 폭 차이로 인한 레이아웃 밀림 방지.
+   영어 구간은 자연 가변폭 유지를 위해 .typing-text--ko 하위에서만 적용. */
+.typing-text--ko .char-pending,
+.typing-text--ko .char-correct,
+.typing-text--ko .char-wrong,
+.typing-text--ko .char-composing,
+.typing-text--ko .char-cursor {
+  display: inline-block;
+  width: 1em;
+  text-align: center;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+/* 한국어 커서: border-left 대신 ::before 사용 (inline-block 폭 유지) */
+.typing-text--ko .char-cursor {
+  border-left: none;
+  position: relative;
+}
+.typing-text--ko .char-cursor::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 2px;
+  background: var(--purple-primary, #8758FF);
+  animation: blink-ko 0.9s step-end infinite;
+}
+@keyframes blink-ko {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+.typing-text--ko .char-space { width: 0.5em; }
+
+/* ── 글자 상태 색상 (라이트 기본) ───────────────────────────── */
+.char-pending   { color: #d1d5db; }
+.char-correct   { color: var(--purple-primary, #8758FF); }
+.char-wrong     { color: #ef4444; background: #fee2e2; border-radius: 3px; }
+.char-composing {
+  color: var(--purple-primary, #8758FF);
+  border-bottom: 2px solid var(--purple-primary, #8758FF);
+  opacity: 0.6;
+}
+.char-cursor {
+  color: #d1d5db;
+  border-left: 2.5px solid var(--purple-primary, #8758FF);
+  margin-left: 1px;
+  animation: blink 0.9s step-end infinite;
+}
+@keyframes blink {
+  0%, 100% { border-color: var(--purple-primary, #8758FF); }
+  50%       { border-color: transparent; }
+}
+
+/* ── 다크 테마 오버라이드 (LevelTest 등 어두운 배경) ─────────── */
+.typing-text--dark .char-pending { color: #3f3f46; }
+.typing-text--dark .char-cursor  { color: #3f3f46; }
+.typing-text--dark .char-wrong   { background: rgba(239, 68, 68, 0.15); }
+
+/* ── 공통 hidden input ──────────────────────────────────────── */
+.arena-input-hidden {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}

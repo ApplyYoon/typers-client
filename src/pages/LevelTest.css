@@ -198,34 +198,8 @@
   word-break: break-all;
 }
 
-/* 글자 상태 — 다크 배경 전용 */
-.lt-char {
-  display: inline-block;
-}
-
-.lt-char--pending   { color: #3f3f46; }
-.lt-char--correct   { color: #8758FF; }
-.lt-char--wrong     { color: #ef4444; background: rgba(239, 68, 68, 0.15); border-radius: 3px; }
-.lt-char--composing { color: #8758FF; border-bottom: 2px solid #8758FF; opacity: 0.7; }
-.lt-char--cursor    {
-  color: #3f3f46;
-  border-left: 2.5px solid #8758FF;
-  margin-left: 1px;
-  animation: lt-blink 0.9s step-end infinite;
-}
-
-@keyframes lt-blink {
-  0%, 100% { border-color: #8758FF; }
-  50%       { border-color: transparent; }
-}
-
-.lt-hidden-input {
-  position: absolute;
-  opacity: 0;
-  width: 1px;
-  height: 1px;
-  pointer-events: none;
-}
+/* char-* 글자 상태, hidden input → TypingText.css 로 이동.
+   다크 테마 오버라이드는 TypingText.css의 .typing-text--dark 로 처리. */
 
 /* ── 결과 ──────────────────────────────────────────────────── */
 .lt-result-emoji {

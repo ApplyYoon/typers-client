@@ -528,67 +528,7 @@
   white-space: pre-wrap;
 }
 
-/* ── 한국어 구간 고정 폭: 자모(ㄴ) ↔ 음절(나) 폭·높이 차이로 인한 레이아웃 밀림 방지
-   vertical-align: middle → inline-block 요소의 세로 기준선 고정 (줄 높이 흔들림 방지) */
-.arena-text-ko .char-pending,
-.arena-text-ko .char-correct,
-.arena-text-ko .char-wrong,
-.arena-text-ko .char-composing,
-.arena-text-ko .char-cursor {
-  display: inline-block;
-  width: 1em;
-  text-align: center;
-  vertical-align: middle;
-  line-height: 1;        /* 높이를 1em으로 고정 → jamo↔음절 전환 시 line box 흔들림 방지 */
-}
-
-/* 한국어 커서: border-left는 박스 폭 변경, box-shadow inset은 높이 제어 불가
-   → ::before 절대 위치로 폭/높이 모두 독립 제어 */
-.arena-text-ko .char-cursor {
-  border-left: none;
-  margin-left: 0;
-  animation: none;
-  position: relative;
-}
-.arena-text-ko .char-cursor::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  width: 2px;
-  background: #7c3aed;
-  animation: blink-ko 0.9s step-end infinite;
-}
-@keyframes blink-ko {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0; }
-}
-
-/* 한국어 띄어쓰기: .arena-text-ko .char-* 보다 specificity 높게 설정해야 width 적용됨 */
-.arena-text-ko .char-space-ko {
-  width: 0.5em;
-}
-
-.char-pending   { color: #d1d5db; }
-.char-correct   { color: #7c3aed; }
-.char-wrong     { color: #ef4444; background: #fee2e2; border-radius: 3px; }
-.char-composing {
-  color: #7c3aed;
-  border-bottom: 2px solid #7c3aed;
-  opacity: 0.6;
-}
-.char-cursor  {
-  color: #d1d5db;
-  border-left: 2.5px solid #7c3aed;
-  animation: blink 0.9s step-end infinite;
-  margin-left: 1px;
-}
-
-@keyframes blink {
-  0%, 100% { border-color: #7c3aed; }
-  50%       { border-color: transparent; }
-}
+/* char-* 글자 상태, 한국어 고정폭, blink 애니메이션 → TypingText.css 로 이동 */
 
 /* ===== Phase badge ===== */
 .phase-badge {

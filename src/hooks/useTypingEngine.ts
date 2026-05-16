@@ -1,149 +1,55 @@
 /**
- * useTypingEngine
+ * useTypingEngine — TypingEngine 클래스를 React hook API로 감싸는 어댑터
  *
- * 자모 단위 타이핑 엔진 훅. IME를 우회하고 keydown 이벤트를 직접 가로채
- * 한글/영어 공통으로 동작하는 타이핑 판정 로직을 캡슐화한다.
+ * Adapter 패턴:
+ *   TypingEngine (순수 클래스)  →  useTypingEngine (React 훅)  →  컴포넌트
  *
- * 사용처: 학교대항전, 왼손/오른손 연습, 장문 연습 등
- *
- * 설계 원칙:
- *  - 타이머·페이즈 전환·텍스트 선택 등 '게임 흐름'은 소비자(consumer)가 담당
- *  - 훅은 오직 "현재 text에 대한 자모 진행 + 정확도 누적 + 화면 표시 계산"만 책임
- *  - active=false 이면 keydown 입력을 전부 무시 (카운트다운 / 결과 화면 등)
- *  - onComplete: 한 문장(text)을 끝까지 다 입력했을 때 소비자에게 알림
+ * 책임:
+ *  - TypingEngine 인스턴스 생명주기 관리 (useRef로 단일 인스턴스 유지)
+ *  - keydown 이벤트 → engine.handleKey() 변환
+ *  - engine 상태 변경 → setSnap() → React 리렌더 트리거
+ *  - text 변경 감지 → engine.setText() 전달
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  decomposeText,
-  composePartialJamos,
-  isKoreanJamo,
-  KOREAN_KEY_TO_JAMO,
-  CODE_TO_QWERTY,
-} from '../utils/jamoUtils';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { TypingEngine, type TypingScore, type EngineSnapshot } from '../engine/TypingEngine';
 
-/* ── 타입 ──────────────────────────────────────────────────── */
-
-export interface TypingScore {
-  cpm: number;
-  accuracy: number;
-}
+export type { TypingScore };
 
 export interface UseTypingEngineReturn {
-  /** hidden <input>에 ref를 달아 keydown 캡처 */
   inputRef: React.RefObject<HTMLInputElement | null>;
-  /** <input onKeyDown={handleKeyDown}> */
   handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
-  /**
-   * text.split('').map((char, i) => getSyllableDisplay(i, char)) 형태로 사용.
-   * cls: 'correct' | 'pending' | 'composing' | 'cursor' | 'wrong'
-   * char: 화면에 실제 표시할 글자
-   */
   getSyllableDisplay: (charIndex: number, targetChar: string) => { cls: string; char: string };
-  /** 누적 정답 자모 수 */
   totalCorrect: number;
-  /** 누적 입력 자모 수 (오타 포함) */
   totalTyped: number;
-  /** 실시간 정확도 0–100 */
   accuracy: number;
-  /**
-   * 타이핑 애니메이션 프레임 토글(1|2).
-   * 캐릭터 스프라이트 교체 등에 활용.
-   */
   frame: 1 | 2;
-  /**
-   * 세션 내 자모(또는 영문자)별 오타 횟수.
-   * key: 기대했던 자모/글자, value: 틀린 횟수.
-   * AI 약점 분석에 그대로 전달 가능.
-   */
   errorLog: Record<string, number>;
-  /**
-   * 현재 errorLog의 최신 스냅샷을 동기적으로 반환.
-   * 타이머 종료 시점처럼 stale closure 위험이 있는 곳에서 사용.
-   */
   getErrorLog: () => Record<string, number>;
-  /**
-   * text prop이 바뀌면 자동으로 내부 상태를 리셋하지만,
-   * 같은 text로 처음부터 다시 시작하고 싶을 때 수동 호출.
-   */
   reset: () => void;
-  /**
-   * 게임 종료 시 최종 점수 계산.
-   * @param startTimeMs Date.now() 기준 게임 시작 시각
-   */
   getScore: (startTimeMs: number) => TypingScore;
 }
 
-/* ── 훅 본체 ────────────────────────────────────────────────── */
-
 interface Options {
-  /** 현재 타이핑 대상 문장 */
   text: string;
-  /** false이면 keydown 입력 전부 무시 */
   active: boolean;
-  /** 현재 text를 끝까지 입력했을 때 호출 */
   onComplete: () => void;
 }
 
 export function useTypingEngine({ text, active, onComplete }: Options): UseTypingEngineReturn {
-  // ── 자모 분해 (text가 바뀔 때만 재계산) ────────────────────
-  const jamoInfo = useMemo(() => decomposeText(text), [text]);
-
-  // ── 진행 상태 ────────────────────────────────────────────────
-  const [jamoPos, setJamoPos]         = useState(0);
-  const [hasError, setHasError]       = useState(false);
-  const [wrongTyped, setWrongTyped]   = useState('');
-  const [totalCorrect, setTotalCorrect] = useState(0);
-  const [totalTyped, setTotalTyped]   = useState(0);
-  const [frame, setFrame]             = useState<1 | 2>(1);
-  const [errorLog, setErrorLog]       = useState<Record<string, number>>({});
-
-  // stale closure 없이 최신값 읽기 위한 ref 병렬 추적
-  const totalCorrectRef = useRef(0);
-  const totalTypedRef   = useRef(0);
-  const errorLogRef     = useRef<Record<string, number>>({});
-
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  // onComplete는 매 렌더마다 바뀔 수 있으므로 ref로 안정화
+  const engineRef     = useRef(new TypingEngine(text));
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
 
-  // ── text 변경 시 자모 진행 상태 리셋 ────────────────────────
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [snap, setSnap] = useState<EngineSnapshot>(() => engineRef.current.snapshot());
+
+  // text 변경 → 엔진에 전달 후 스냅샷 갱신
   useEffect(() => {
-    setJamoPos(0);
-    setHasError(false);
-    setWrongTyped('');
+    engineRef.current.setText(text);
+    setSnap(engineRef.current.snapshot());
   }, [text]);
 
-  // ── 수동 리셋 ────────────────────────────────────────────────
-  const reset = useCallback(() => {
-    setJamoPos(0);
-    setHasError(false);
-    setWrongTyped('');
-    setTotalCorrect(0);
-    setTotalTyped(0);
-    totalCorrectRef.current = 0;
-    totalTypedRef.current   = 0;
-    setFrame(1);
-    errorLogRef.current = {};
-    setErrorLog({});
-  }, []);
-
-  // ── errorLog 동기 읽기 ────────────────────────────────────────
-  const getErrorLog = useCallback((): Record<string, number> => errorLogRef.current, []);
-
-  // ── 최종 점수 계산 ────────────────────────────────────────────
-  const getScore = useCallback((startTimeMs: number): TypingScore => {
-    const elapsed  = (Date.now() - startTimeMs) / 1000 / 60 || 1 / 60;
-    const correct  = totalCorrectRef.current;
-    const typed    = totalTypedRef.current;
-    const cpm      = Math.round(correct / elapsed);
-    const accuracy = typed > 0 ? Math.round((correct / typed) * 100) : 0;
-    return { cpm, accuracy };
-  }, []);
-
-  // ── keydown 핸들러 ────────────────────────────────────────────
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!active) return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;
@@ -151,116 +57,42 @@ export function useTypingEngine({ text, active, onComplete }: Options): UseTypin
 
     e.preventDefault();
 
-    // Backspace: 오타 상태만 해제
-    if (e.key === 'Backspace') {
-      if (hasError) { setHasError(false); setWrongTyped(''); }
-      return;
-    }
+    const result = engineRef.current.handleKey(e.key, e.code, e.shiftKey);
+    if (result === 'ignored') return;
 
-    // 오타 상태에서는 Backspace 외 모든 키 차단
-    // (정답 키로 오타 스킵 방지)
-    if (hasError) return;
+    setSnap(engineRef.current.snapshot());
+    if (result === 'complete') onCompleteRef.current();
+  }, [active]);
 
-    const { jamoSequence } = jamoInfo;
-    const expected = jamoSequence[jamoPos];
-    if (expected === undefined) return;
-
-    // 입력된 자모 결정
-    let typed: string;
-    if (isKoreanJamo(expected)) {
-      // 한국어: e.code → QWERTY 기본키 → 두벌식 자모
-      const baseKey = CODE_TO_QWERTY[e.code];
-      if (!baseKey) return;
-      const physKey = e.shiftKey ? baseKey.toUpperCase() : baseKey;
-      typed = KOREAN_KEY_TO_JAMO[physKey] ?? '';
-      // 매핑 안 된 키(숫자·특수문자 등) → 정확도 오염 방지
-      if (!typed) return;
-    } else {
-      // 영어·공백: e.key 그대로
-      typed = e.key;
-    }
-
-    // 입력 카운트 (오타 포함)
-    setFrame(f => (f === 1 ? 2 : 1));
-    totalTypedRef.current += 1;
-    setTotalTyped(n => n + 1);
-
-    if (typed === expected) {
-      // ── 정답 ────────────────────────────────────────────────
-      setHasError(false);
-      setWrongTyped('');
-      totalCorrectRef.current += 1;
-      setTotalCorrect(n => n + 1);
-
-      const nextPos = jamoPos + 1;
-      if (nextPos >= jamoSequence.length) {
-        // 문장 완료 → 소비자에게 알림 (다음 text로 교체 등)
-        onCompleteRef.current();
-      } else {
-        setJamoPos(nextPos);
-      }
-    } else {
-      // ── 오타 ────────────────────────────────────────────────
-      setHasError(true);
-      setWrongTyped(typed);
-      const next = { ...errorLogRef.current, [expected]: (errorLogRef.current[expected] ?? 0) + 1 };
-      errorLogRef.current = next;
-      setErrorLog(next);
-    }
-  }, [active, hasError, jamoInfo, jamoPos]);
-
-  // ── 렌더 헬퍼 ────────────────────────────────────────────────
+  // snap을 dep에 포함 → 상태 변경 후 getSyllableDisplay가 최신 엔진 상태를 읽도록 보장
   const getSyllableDisplay = useCallback(
-    (i: number, targetChar: string): { cls: string; char: string } => {
-      const range = jamoInfo.syllableRanges[i];
-
-      // 완료된 음절
-      if (jamoPos >= range.end) return { cls: 'correct', char: targetChar };
-
-      // 아직 안 온 음절
-      if (jamoPos < range.start) return { cls: 'pending', char: targetChar };
-
-      // 현재 진행 중인 음절
-      if (hasError) {
-        // 띄어쓰기 위치 오타: 입력한 글자 표시 금지
-        if (targetChar === ' ') return { cls: 'wrong', char: ' ' };
-
-        if (jamoPos > range.start) {
-          // 일부 자모를 맞게 친 후 오타
-          // ex) ㅁ+ㅜ → '무',  ㅁ+ㄴ → 합성 불가 → wrongTyped 단독 표시
-          const correctJamos = jamoInfo.jamoSequence.slice(range.start, jamoPos);
-          const before       = composePartialJamos(correctJamos);
-          const composed     = composePartialJamos([...correctJamos, wrongTyped]);
-          return { cls: 'wrong', char: composed !== before ? composed : wrongTyped };
-        }
-        // 첫 자모부터 오타
-        return { cls: 'wrong', char: wrongTyped || targetChar };
-      }
-
-      if (jamoPos === range.start) {
-        // 이 음절의 첫 자모를 아직 안 쳤음 → 커서 위치
-        return { cls: 'cursor', char: targetChar };
-      }
-
-      // 일부 자모를 올바르게 쳤음 → 부분 음절 합성해서 표시
-      const typedJamos = jamoInfo.jamoSequence.slice(range.start, jamoPos);
-      return { cls: 'composing', char: composePartialJamos(typedJamos) };
-    },
-    [jamoInfo, jamoPos, hasError, wrongTyped],
+    (charIndex: number, targetChar: string) =>
+      engineRef.current.getSyllableDisplay(charIndex, targetChar),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [snap],
   );
 
-  // ── 실시간 정확도 ────────────────────────────────────────────
-  const accuracy = totalTyped > 0 ? Math.round((totalCorrect / totalTyped) * 100) : 100;
+  const reset = useCallback(() => {
+    engineRef.current.reset();
+    setSnap(engineRef.current.snapshot());
+  }, []);
+
+  const getScore    = useCallback((startTimeMs: number) => engineRef.current.getScore(startTimeMs), []);
+  const getErrorLog = useCallback(() => engineRef.current.getErrorLog(), []);
+
+  const accuracy = snap.totalTyped > 0
+    ? Math.round((snap.totalCorrect / snap.totalTyped) * 100)
+    : 100;
 
   return {
     inputRef,
     handleKeyDown,
     getSyllableDisplay,
-    totalCorrect,
-    totalTyped,
+    totalCorrect: snap.totalCorrect,
+    totalTyped:   snap.totalTyped,
     accuracy,
-    frame,
-    errorLog,
+    frame:        snap.frame,
+    errorLog:     snap.errorLog,
     getErrorLog,
     reset,
     getScore,
