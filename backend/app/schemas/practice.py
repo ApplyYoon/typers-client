@@ -37,3 +37,10 @@ class StatsResponse(BaseModel):
     daily: list[DailyStats]
     best_cpm: int
     total_sessions: int
+
+
+class RankEntry(BaseModel):
+    rank: int
+    username: str
+    best_cpm: int
+    session_count: int

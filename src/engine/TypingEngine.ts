@@ -128,6 +128,8 @@ export class TypingEngine {
    */
   getSyllableDisplay(charIndex: number, targetChar: string): { cls: string; char: string } {
     const range = this._jamoInfo.syllableRanges[charIndex];
+    // text 변경 직후 useEffect가 실행되기 전 한 프레임 동안 range가 없을 수 있음
+    if (!range) return { cls: 'pending', char: targetChar };
 
     if (this._jamoPos >= range.end)  return { cls: 'correct', char: targetChar };
     if (this._jamoPos < range.start) return { cls: 'pending', char: targetChar };

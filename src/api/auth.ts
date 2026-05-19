@@ -6,6 +6,7 @@ export interface UserResponse {
   email: string;
   level: number;
   initial_cpm: number;
+  rank_score: number;   // 배틀 랭크 포인트 (기본 1000)
 }
 
 export const authApi = {

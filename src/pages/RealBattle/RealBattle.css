@@ -1,0 +1,467 @@
+/* ────────────────────────────────────────────────────────────
+   RealBattle — 실시간 배틀 전체 스타일
+   디자인 시스템: #8758FF Primary, 4px 그리드, 150–300ms 애니메이션
+   ──────────────────────────────────────────────────────────── */
+
+.real-battle-page {
+  min-height: calc(100vh - 60px);
+  background: var(--gray-50, #f9fafb);
+  padding: 32px 16px;
+}
+
+/* ── 공용 버튼 ───────────────────────────────────────────────── */
+
+.rb-btn-primary {
+  padding: 12px 28px;
+  background: var(--purple-primary, #8758FF);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 200ms cubic-bezier(0.4, 0, 0.2, 1),
+              transform  150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.rb-btn-primary:hover  { background: #6E58FF; }
+.rb-btn-primary:active { transform: scale(0.97); }
+.rb-btn-primary:disabled { opacity: 0.4; cursor: default; }
+
+.rb-btn-ghost {
+  padding: 10px 24px;
+  background: transparent;
+  color: var(--gray-600, #4b5563);
+  border: 1.5px solid var(--gray-300, #d1d5db);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 200ms, color 200ms;
+}
+.rb-btn-ghost:hover { border-color: var(--purple-primary, #8758FF); color: var(--purple-primary); }
+
+
+/* ── 로비 ─────────────────────────────────────────────────────── */
+
+.rb-lobby {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.rb-lobby-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.rb-lobby-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--gray-900, #111827);
+  margin: 0 0 8px;
+}
+
+.rb-lobby-sub {
+  font-size: 15px;
+  color: var(--gray-500, #6b7280);
+  margin: 0;
+}
+
+.rb-mode-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 540px) { .rb-mode-grid { grid-template-columns: 1fr; } }
+
+.rb-mode-card {
+  position: relative;
+  padding: 32px 24px;
+  background: #fff;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 200ms, box-shadow 200ms, transform 150ms;
+}
+.rb-mode-card:hover {
+  border-color: var(--purple-primary, #8758FF);
+  box-shadow: 0 4px 20px rgba(135, 88, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.rb-mode-icon { font-size: 36px; margin-bottom: 12px; }
+
+.rb-mode-name {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--gray-900);
+  margin: 0 0 8px;
+}
+
+.rb-mode-desc {
+  font-size: 13px;
+  color: var(--gray-500, #6b7280);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.rb-mode-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.rb-badge-ranked { background: #ede9fe; color: #7c3aed; }
+.rb-badge-custom { background: #fef9c3; color: #92400e; }
+
+.rb-custom-box {
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.rb-custom-label { font-size: 14px; font-weight: 600; color: var(--gray-700); margin: 0 0 12px; }
+
+.rb-custom-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.rb-custom-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 15px;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  outline: none;
+  transition: border-color 200ms;
+}
+.rb-custom-input:focus { border-color: var(--purple-primary); }
+
+.rb-lobby-card {
+  text-align: center;
+  padding: 60px 24px;
+}
+.rb-login-hint { font-size: 16px; color: var(--gray-500); margin-bottom: 24px; }
+
+
+/* ── 매칭 대기 ───────────────────────────────────────────────── */
+
+.rb-matching {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+
+.rb-matching-card {
+  text-align: center;
+  padding: 48px 40px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  min-width: 320px;
+}
+
+.rb-spinner {
+  width: 56px;
+  height: 56px;
+  border: 5px solid #e5e7eb;
+  border-top-color: var(--purple-primary, #8758FF);
+  border-radius: 50%;
+  animation: rb-spin 0.8s linear infinite;
+  margin: 0 auto 20px;
+}
+@keyframes rb-spin { to { transform: rotate(360deg); } }
+
+.rb-matching-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--gray-900);
+  margin: 0 0 8px;
+}
+
+.rb-matching-elapsed {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--purple-primary, #8758FF);
+  font-variant-numeric: tabular-nums;
+  margin: 0 0 8px;
+}
+
+.rb-matching-hint {
+  font-size: 13px;
+  color: var(--gray-500);
+  margin: 0 0 24px;
+}
+
+.rb-matching-dots {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+.rb-matching-dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--purple-primary, #8758FF);
+  animation: rb-bounce 1.2s ease-in-out infinite;
+}
+.rb-matching-dots span:nth-child(2) { animation-delay: 0.2s; }
+.rb-matching-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes rb-bounce {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40% { transform: scale(1.0); opacity: 1; }
+}
+
+.rb-cancel-btn { margin-top: 4px; }
+
+
+/* ── 배틀 아레나 ─────────────────────────────────────────────── */
+
+.rb-arena {
+  max-width: 800px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* 카운트다운 오버레이 */
+.rb-countdown-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  color: #fff;
+}
+
+.rb-countdown-vs {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+.rb-vs {
+  font-size: 16px;
+  font-weight: 500;
+  color: #9ca3af;
+}
+
+.rb-countdown-num {
+  font-size: 96px;
+  font-weight: 900;
+  color: var(--purple-primary, #8758FF);
+  line-height: 1;
+  animation: rb-pop 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes rb-pop {
+  0%   { transform: scale(0.5); opacity: 0; }
+  60%  { transform: scale(1.1); }
+  100% { transform: scale(1);   opacity: 1; }
+}
+
+/* 상단 통계 바 */
+.rb-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px 24px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+}
+
+.rb-player-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.rb-player-stat.rb-opp { text-align: right; align-items: flex-end; }
+
+.rb-player-name { font-size: 13px; font-weight: 600; color: var(--gray-500); }
+.rb-cpm { font-size: 22px; font-weight: 800; }
+.rb-acc { font-size: 13px; color: var(--gray-500); }
+.rb-finished-tag {
+  font-size: 11px;
+  font-weight: 700;
+  background: #dcfce7;
+  color: #16a34a;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+/* 진행 바 */
+.rb-progress-wrap {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px 24px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+}
+
+.rb-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rb-progress-label {
+  width: 28px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-500);
+  flex-shrink: 0;
+}
+
+.rb-progress-track {
+  flex: 1;
+  height: 10px;
+  background: #f3f4f6;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.rb-progress-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.rb-fill-me  { background: var(--purple-primary, #8758FF); }
+.rb-fill-opp { background: #f59e0b; }
+
+.rb-progress-pct {
+  width: 36px;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gray-600);
+  flex-shrink: 0;
+}
+
+/* 타이핑 텍스트 */
+.rb-text {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  font-size: 20px;
+  line-height: 1.8;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  cursor: text;
+  min-height: 100px;
+}
+
+/* 완료 상태 */
+.rb-my-done {
+  background: #f0fdf4;
+  border: 2px solid #86efac;
+  border-radius: 12px;
+  padding: 32px;
+  text-align: center;
+}
+.rb-my-done p { font-size: 16px; font-weight: 600; color: #15803d; margin: 0 0 8px; }
+.rb-my-done-cpm { font-size: 36px; font-weight: 900; color: var(--purple-primary); }
+
+
+/* ── 결과 화면 ───────────────────────────────────────────────── */
+
+.rb-result {
+  max-width: 480px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.rb-verdict {
+  font-size: 52px;
+  font-weight: 900;
+  line-height: 1;
+  margin-bottom: 32px;
+  animation: rb-pop 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rb-cpm-compare {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 28px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+}
+
+.rb-cpm-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+.rb-cpm-bar-wrap {
+  width: 60px;
+  height: 120px;
+  background: #f3f4f6;
+  border-radius: 6px 6px 0 0;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.rb-cpm-bar {
+  width: 100%;
+  border-radius: 6px 6px 0 0;
+  transition: height 600ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rb-cpm-name { font-size: 12px; font-weight: 600; color: var(--gray-500); }
+.rb-cpm-val  { font-size: 24px; font-weight: 800; color: var(--gray-900); }
+.rb-acc-val  { font-size: 12px; color: var(--gray-500); }
+
+.rb-cpm-vs-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gray-400);
+  padding-bottom: 8px;
+  align-self: center;
+}
+
+.rb-mmr-delta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 28px;
+  padding: 16px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+}
+
+.rb-mmr-label { font-size: 14px; font-weight: 600; color: var(--gray-600); }
+.rb-mmr-value { font-size: 28px; font-weight: 900; }
+
+.rb-result-btns {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}

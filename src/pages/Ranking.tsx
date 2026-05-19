@@ -1,130 +1,148 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { practiceApi, type RankEntry, type RankPeriod } from '../api/practice';
 import './Ranking.css';
 
-interface RankUser {
-  rank: number;
-  username: string;
-  avgWpm: number;
-  avatar: string;
-  isTop3: boolean;
-}
+const AVATAR_COLORS = ['#8758FF', '#6DE701', '#03CF5D', '#5B37BF', '#f59e0b'];
 
-const MOCK_RANKS: RankUser[] = [
-  { rank: 1, username: '포도봉', avgWpm: 1100, avatar: '', isTop3: true },
-  { rank: 2, username: '알포도', avgWpm: 1050, avatar: '', isTop3: true },
-  { rank: 3, username: '포포', avgWpm: 980, avatar: '', isTop3: true },
-  { rank: 4, username: '포도좋아', avgWpm: 900, avatar: '', isTop3: false },
-  { rank: 5, username: '포도포', avgWpm: 890, avatar: '', isTop3: false },
-  { rank: 6, username: '타이핑왕', avgWpm: 870, avatar: '', isTop3: false },
-  { rank: 7, username: '빠른손', avgWpm: 850, avatar: '', isTop3: false },
-  { rank: 8, username: '포도나무', avgWpm: 820, avatar: '', isTop3: false },
-  { rank: 9, username: '스피드왕', avgWpm: 800, avatar: '', isTop3: false },
-  { rank: 10, username: '포도사랑', avgWpm: 790, avatar: '', isTop3: false },
+const TABS: { key: RankPeriod; label: string }[] = [
+  { key: 'daily',   label: '일간' },
+  { key: 'weekly',  label: '주간' },
+  { key: 'monthly', label: '월간' },
+  { key: 'all',     label: '전체' },
 ];
 
-const AVATAR_COLORS = ['#8758FF', '#6DE701', '#03CF5D'];
-
 const Ranking: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'monthly' | 'all'>('daily');
-  const top3 = MOCK_RANKS.filter((u) => u.isTop3);
-  const rest = MOCK_RANKS.filter((u) => !u.isTop3);
+  const { user } = useAuth();
+  const [period, setPeriod]   = useState<RankPeriod>('daily');
+  const [ranks, setRanks]     = useState<RankEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    practiceApi.getRanking(period)
+      .then(setRanks)
+      .catch(() => setRanks([]))
+      .finally(() => setLoading(false));
+  }, [period]);
+
+  const top3 = ranks.slice(0, 3);
+  const rest = ranks.slice(3);
 
   const now = new Date();
-  const dateStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} (C)`;
+  const dateStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
   return (
     <div className="ranking-page">
       <div className="ranking-container">
         <div className="ranking-header">
-          <p className="ranking-subtitle">현재 9명의 유저가 접속 중입니다.</p>
+          <p className="ranking-subtitle">
+            {loading ? '불러오는 중...' : `${ranks.length}명의 타이퍼가 랭킹에 올랐습니다`}
+          </p>
           <p className="ranking-date">{dateStr}</p>
         </div>
 
-        {/* Podium */}
-        <div className="podium">
-          {/* 2nd place */}
-          <div className="podium-item podium-2nd">
-            <div className="podium-crown">
-              <img src="/rank_silver.png" alt="2nd" className="podium-crown-img" />
-            </div>
-            <div
-              className="podium-avatar"
-              style={{ background: AVATAR_COLORS[1] }}
+        {/* 탭 */}
+        <div className="rank-tabs rank-tabs-top">
+          {TABS.map(({ key, label }) => (
+            <button
+              key={key}
+              className={`rank-tab ${period === key ? 'active' : ''}`}
+              onClick={() => setPeriod(key)}
             >
-              <img src="/logo_nbg.png" alt="logo" className="podium-emoji" />
-            </div>
-            <p className="podium-name">{top3[1]?.username}</p>
-            <div className="podium-block podium-block-2nd">
-              <span className="podium-rank-num">2</span>
-            </div>
-          </div>
-
-          {/* 1st place */}
-          <div className="podium-item podium-1st">
-            <div className="podium-crown">
-              <img src="/rank_gold.png" alt="1st" className="podium-crown-img" />
-            </div>
-            <div
-              className="podium-avatar podium-avatar-large"
-              style={{ background: AVATAR_COLORS[0] }}
-            >
-              <img src="/logo_nbg.png" alt="logo" className="podium-emoji" />
-            </div>
-            <p className="podium-name">{top3[0]?.username}</p>
-            <div className="podium-block podium-block-1st">
-              <span className="podium-rank-num">1</span>
-            </div>
-          </div>
-
-          {/* 3rd place */}
-          <div className="podium-item podium-3rd">
-            <div className="podium-crown">
-              <img src="/rank_bronze.png" alt="3rd" className="podium-crown-img" />
-            </div>
-            <div
-              className="podium-avatar"
-              style={{ background: AVATAR_COLORS[2] }}
-            >
-              <span className="podium-emoji">😊</span>
-            </div>
-            <p className="podium-name">{top3[2]?.username}</p>
-            <div className="podium-block podium-block-3rd">
-              <span className="podium-rank-num">3</span>
-            </div>
-          </div>
+              {label}
+            </button>
+          ))}
         </div>
 
-        {/* Rank list */}
-        <div className="rank-list-section">
-          <div className="rank-tabs">
-            {(['daily', 'weekly', 'monthly', 'all'] as const).map((tab) => (
-              <button
-                key={tab}
-                className={`rank-tab ${activeTab === tab ? 'active' : ''}`}
-                onClick={() => setActiveTab(tab)}
-              >
-                {tab === 'daily' ? '일간' : tab === 'weekly' ? '주간' : tab === 'monthly' ? '월간' : '전체'}
-              </button>
-            ))}
+        {loading ? (
+          <div className="ranking-loading">랭킹 집계 중...</div>
+        ) : ranks.length === 0 ? (
+          <div className="ranking-empty">
+            <p>이 기간에 기록이 없습니다.</p>
+            <p className="ranking-empty-sub">타이핑 연습 후 로그인하면 랭킹에 등록됩니다.</p>
           </div>
-
-          <div className="rank-list">
-            {rest.map((user) => (
-              <div key={user.rank} className="rank-row">
-                <span className="rank-num">{user.rank}</span>
-                <img src="/logo_nbg.png" alt="logo" className="rank-avatar-small" />
-                <span className="rank-username">{user.username}</span>
-                <div className="rank-score">
-                  <span className="rank-wpm-icon">💜</span>
-                  <span className="rank-wpm">평균 타수 {user.avgWpm}</span>
+        ) : (
+          <>
+            {/* 포디엄 */}
+            <div className="podium">
+              {/* 2위 */}
+              <div className="podium-item podium-2nd">
+                <div className="podium-crown">
+                  <img src="/rank_silver.png" alt="2nd" className="podium-crown-img" />
                 </div>
-                {user.rank === 5 && (
-                  <button className="rank-up-btn" title="순위 올라감">↑</button>
-                )}
+                <div className="podium-avatar" style={{ background: AVATAR_COLORS[1] }}>
+                  <img src="/logo_nbg.png" alt="logo" className="podium-emoji" />
+                </div>
+                <p className="podium-name">{top3[1]?.username ?? '—'}</p>
+                <div className="podium-block podium-block-2nd">
+                  <span className="podium-rank-num">2</span>
+                  {top3[1] && <span className="podium-cpm">{top3[1].best_cpm} CPM</span>}
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
+
+              {/* 1위 */}
+              <div className="podium-item podium-1st">
+                <div className="podium-crown">
+                  <img src="/rank_gold.png" alt="1st" className="podium-crown-img" />
+                </div>
+                <div className="podium-avatar podium-avatar-large" style={{ background: AVATAR_COLORS[0] }}>
+                  <img src="/logo_nbg.png" alt="logo" className="podium-emoji" />
+                </div>
+                <p className="podium-name">{top3[0]?.username ?? '—'}</p>
+                <div className="podium-block podium-block-1st">
+                  <span className="podium-rank-num">1</span>
+                  {top3[0] && <span className="podium-cpm">{top3[0].best_cpm} CPM</span>}
+                </div>
+              </div>
+
+              {/* 3위 */}
+              <div className="podium-item podium-3rd">
+                <div className="podium-crown">
+                  <img src="/rank_bronze.png" alt="3rd" className="podium-crown-img" />
+                </div>
+                <div className="podium-avatar" style={{ background: AVATAR_COLORS[2] }}>
+                  <img src="/logo_nbg.png" alt="logo" className="podium-emoji" />
+                </div>
+                <p className="podium-name">{top3[2]?.username ?? '—'}</p>
+                <div className="podium-block podium-block-3rd">
+                  <span className="podium-rank-num">3</span>
+                  {top3[2] && <span className="podium-cpm">{top3[2].best_cpm} CPM</span>}
+                </div>
+              </div>
+            </div>
+
+            {/* 4위 이하 */}
+            {rest.length > 0 && (
+              <div className="rank-list-section">
+                <div className="rank-list">
+                  {rest.map((entry) => (
+                    <div
+                      key={entry.rank}
+                      className={`rank-row${user?.username === entry.username ? ' rank-row-me' : ''}`}
+                    >
+                      <span className="rank-num">{entry.rank}</span>
+                      <div
+                        className="rank-avatar-small"
+                        style={{ background: AVATAR_COLORS[entry.rank % AVATAR_COLORS.length] }}
+                      >
+                        <img src="/logo_nbg.png" alt="logo" className="rank-avatar-img" />
+                      </div>
+                      <span className="rank-username">
+                        {entry.username}
+                        {user?.username === entry.username && <span className="rank-me-badge">나</span>}
+                      </span>
+                      <div className="rank-score">
+                        <span className="rank-wpm">{entry.best_cpm} CPM</span>
+                        <span className="rank-session-count">{entry.session_count}회</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

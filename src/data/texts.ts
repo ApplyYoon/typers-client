@@ -269,3 +269,18 @@ export function getPracticeText(mode: TypingMode, lang: 'ko' | 'en' = 'ko'): str
   practiceLastPicked[key] = idx;
   return pool[idx];
 }
+
+// ── 커스텀 사전 지원 ─────────────────────────────────────────
+// 단어 목록을 받아 자연스러운 연습 문장을 만들어 반환.
+// 단어가 없으면 기본 short 텍스트로 폴백.
+let customLastIdx = -1;
+
+export function getTextFromWords(words: string[]): string {
+  if (!words.length) return getPracticeText('short', 'ko');
+  let idx: number;
+  do { idx = Math.floor(Math.random() * words.length); }
+  while (words.length > 1 && idx === customLastIdx);
+  customLastIdx = idx;
+  return words[idx];
+}
+

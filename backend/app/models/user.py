@@ -17,5 +17,7 @@ class User(Base):
     )
     level: Mapped[int] = mapped_column(Integer, default=0)        # 0~4
     initial_cpm: Mapped[int] = mapped_column(Integer, default=0)  # 레벨테스트 측정값
+    rank_score: Mapped[int] = mapped_column(Integer, default=1000) # 배틀 랭크 포인트 (초기값 1000)
 
-    sessions: Mapped[list["PracticeSession"]] = relationship(back_populates="user")  # noqa: F821
+    sessions:     Mapped[list["PracticeSession"]] = relationship(back_populates="user")  # noqa: F821
+    dictionaries: Mapped[list["Dictionary"]]     = relationship(back_populates="user")  # noqa: F821

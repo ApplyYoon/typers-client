@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getPracticeText, MODE_META, type TypingMode } from '../data/texts';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { getPracticeText, getTextFromWords, MODE_META, type TypingMode } from '../data/texts';
 import { useTypingEngine } from '../hooks/useTypingEngine';
 import TypingText from '../components/TypingText';
 import { savePracticeSession, getActivityData } from '../utils/practiceStorage';
 import { useAuth } from '../context/AuthContext';
 import { practiceApi } from '../api/practice';
+import { dictApi, type Dictionary } from '../api/dictionary';
 import './Typing.css';
 
 /* ── 타입 ─────────────────────────────────────────────────── */
@@ -44,6 +45,17 @@ const DURATIONS = [
 const Typing: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const dictId = searchParams.get('dictId');
+
+  // 커스텀 사전 로드
+  const [customDict, setCustomDict] = useState<Dictionary | null>(null);
+  useEffect(() => {
+    if (!dictId) return;
+    dictApi.get(dictId)
+      .then(setCustomDict)
+      .catch(() => setCustomDict(null));
+  }, [dictId]);
 
   const [phase, setPhase]         = useState<Phase>('idle');
   const [mode, setMode]           = useState<TypingMode>('short');
@@ -61,16 +73,22 @@ const Typing: React.FC = () => {
   const langRef          = useRef<'ko' | 'en'>('ko');
   const modeRef          = useRef<TypingMode>('short');
   const sentencesDoneRef = useRef(0);
-  const durationRef      = useRef(60); // stale closure 방지용 — duration state를 ref로 동기화
+  const durationRef      = useRef(60);
+  const userRef          = useRef(user); // doFinish의 deps를 [] 유지하면서 최신 user 접근
 
   useEffect(() => { langRef.current     = lang;     }, [lang]);
   useEffect(() => { modeRef.current     = mode;     }, [mode]);
   useEffect(() => { durationRef.current = duration; }, [duration]);
+  useEffect(() => { userRef.current     = user;     }, [user]);
+
+  const customDictRef = useRef<Dictionary | null>(null);
+  useEffect(() => { customDictRef.current = customDict; }, [customDict]);
 
   const handleComplete = useCallback(() => {
     if (finishedRef.current) return;
     sentencesDoneRef.current += 1;
-    setText(getPracticeText(modeRef.current, langRef.current));
+    const cd = customDictRef.current;
+    setText(cd ? getTextFromWords(cd.words) : getPracticeText(modeRef.current, langRef.current));
   }, []);
 
   const {
@@ -103,20 +121,23 @@ const Typing: React.FC = () => {
     const sessionResult = { cpm, accuracy: acc, sentences: sentencesDoneRef.current, topErrors };
     setResult(sessionResult);
     setPhase('result');
+    const sessionMode = customDictRef.current ? 'custom' : modeRef.current;
+    const sessionLang = customDictRef.current ? 'ko'     : langRef.current;
+
     // localStorage 저장 + 차트 갱신
     savePracticeSession({
       date: new Date().toISOString().slice(0, 10),
       cpm, accuracy: acc,
-      mode: modeRef.current,
-      lang: langRef.current,
+      mode: sessionMode,
+      lang: sessionLang,
     });
     setChartData(getActivityData());
 
     // 로그인 상태일 때 서버에도 세션 저장 (실패해도 UX 차단 없이 silent)
-    if (user) {
+    if (userRef.current) {
       practiceApi.createSession({
-        mode:      modeRef.current,
-        lang:      langRef.current,
+        mode:      sessionMode,
+        lang:      sessionLang,
         cpm,
         accuracy:  acc,
         duration:  durationRef.current,
@@ -124,7 +145,7 @@ const Typing: React.FC = () => {
         error_log: getErrorLogRef.current(),
       }).catch(() => {/* 네트워크 오류 무시 */});
     }
-  }, [user]);
+  }, []);
 
   // ── 카운트다운 ────────────────────────────────────────────
   useEffect(() => {
@@ -172,7 +193,8 @@ const Typing: React.FC = () => {
   const handleStart = useCallback(() => {
     const secs = MODE_META[mode].hasTimer ? duration : 60;
     reset();
-    setText(getPracticeText(mode, lang));
+    const cd = customDictRef.current;
+    setText(cd ? getTextFromWords(cd.words) : getPracticeText(mode, lang));
     sentencesDoneRef.current = 0;
     setLiveCpm(0);
     setCountdown(3);
@@ -241,32 +263,42 @@ const Typing: React.FC = () => {
           {/* idle */}
           {phase === 'idle' && (
             <div className="practice-idle">
-              <p className="idle-desc">{MODE_DESC[mode]}</p>
-              <div className="idle-controls">
-                {meta.hasLang && (
-                  <div className="practice-lang-toggle">
-                    <button
-                      className={`practice-lang-btn${lang === 'ko' ? ' active' : ''}`}
-                      onClick={() => setLang('ko')}
-                    >한국어</button>
-                    <button
-                      className={`practice-lang-btn${lang === 'en' ? ' active' : ''}`}
-                      onClick={() => setLang('en')}
-                    >English</button>
-                  </div>
-                )}
-                {meta.hasTimer && (
-                  <div className="practice-duration-row">
-                    {DURATIONS.map(d => (
+              {customDict ? (
+                <div className="custom-dict-banner">
+                  <span className="custom-dict-badge">커스텀 사전</span>
+                  <span className="custom-dict-name">{customDict.name}</span>
+                  <span className="custom-dict-count">{customDict.words.length}개 단어</span>
+                </div>
+              ) : (
+                <p className="idle-desc">{MODE_DESC[mode]}</p>
+              )}
+              {!customDict && (
+                <div className="idle-controls">
+                  {meta.hasLang && (
+                    <div className="practice-lang-toggle">
                       <button
-                        key={d.seconds}
-                        className={`practice-duration-btn${duration === d.seconds ? ' active' : ''}`}
-                        onClick={() => setDuration(d.seconds)}
-                      >{d.label}</button>
-                    ))}
-                  </div>
-                )}
-              </div>
+                        className={`practice-lang-btn${lang === 'ko' ? ' active' : ''}`}
+                        onClick={() => setLang('ko')}
+                      >한국어</button>
+                      <button
+                        className={`practice-lang-btn${lang === 'en' ? ' active' : ''}`}
+                        onClick={() => setLang('en')}
+                      >English</button>
+                    </div>
+                  )}
+                  {meta.hasTimer && (
+                    <div className="practice-duration-row">
+                      {DURATIONS.map(d => (
+                        <button
+                          key={d.seconds}
+                          className={`practice-duration-btn${duration === d.seconds ? ' active' : ''}`}
+                          onClick={() => setDuration(d.seconds)}
+                        >{d.label}</button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
               <button className="practice-start-btn" onClick={handleStart}>시작하기</button>
             </div>
           )}

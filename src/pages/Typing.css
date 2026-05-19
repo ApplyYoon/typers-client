@@ -468,3 +468,33 @@
   border: 4px solid transparent;
   border-bottom-color: var(--purple-primary);
 }
+
+/* ── 커스텀 사전 배너 ─────────────────────────────────────── */
+.custom-dict-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.custom-dict-badge {
+  background: #ede9fe;
+  color: var(--purple-primary, #8758FF);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.custom-dict-name {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--gray-800, #1f2937);
+}
+
+.custom-dict-count {
+  font-size: 13px;
+  color: #9ca3af;
+}
