@@ -16,13 +16,15 @@ _COOKIE_MAX_AGE = settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60  # seconds
 
 
 def _set_auth_cookie(response: Response, token: str) -> None:
+    # HTTPS=True(프로덕션)이면 secure 쿠키 + SameSite=None(크로스 도메인 허용)
+    # HTTPS=False(개발)이면 SameSite=Lax (HTTP 로컬 호환)
+    is_https = settings.HTTPS
     response.set_cookie(
         key="access_token",
         value=token,
         httponly=True,
-        samesite="lax",
-        # secure=True  ← HTTPS 배포 시 주석 해제
-        secure=False,
+        samesite="none" if is_https else "lax",
+        secure=is_https,
         max_age=_COOKIE_MAX_AGE,
         path="/",
     )

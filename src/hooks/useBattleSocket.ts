@@ -16,13 +16,14 @@ import type { ClientMessage, ServerMessage } from '../api/battle';
 import { authApi } from '../api/auth';
 
 const WS_BASE = (() => {
-  const proto = window.location.protocol === 'https:' ? 'wss' : 'ws';
-  // 개발: Vite 프록시의 WS 지원이 불안정하므로 백엔드 포트에 직접 연결
-  // 프로덕션: 같은 호스트의 /ws/battle (리버스 프록시가 처리)
-  if (import.meta.env.DEV) {
-    return `${proto}://localhost:8000/battle/ws/battle`;
+  const apiUrl = import.meta.env.VITE_API_BASE_URL as string | undefined;
+  if (apiUrl) {
+    // https://api.yourdomain.com → wss://api.yourdomain.com/battle/ws/battle
+    return apiUrl.replace(/^http/, 'ws') + '/battle/ws/battle';
   }
-  return `${proto}://${window.location.host}/battle/ws/battle`;
+  // 개발 fallback: Vite 프록시 WS 불안정 → 백엔드 포트 직접 연결
+  const proto = window.location.protocol === 'https:' ? 'wss' : 'ws';
+  return `${proto}://localhost:8000/battle/ws/battle`;
 })();
 
 const HEARTBEAT_INTERVAL = 5_000;   // ms

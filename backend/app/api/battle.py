@@ -130,18 +130,14 @@ async def _auth_ws(ws: WebSocket) -> User | None:
     # ② ws-ticket 방식 (쿠키 없거나 파싱 실패 시)
     if uid is None:
         ticket = ws.query_params.get("ticket")
-        print(f"[auth_ws] ticket from query: {ticket!r}")
         if ticket:
             try:
                 r = get_redis()
                 stored = await r.getdel(f"ws_ticket:{ticket}")
-                print(f"[auth_ws] Redis getdel result: {stored!r}")
                 if stored:
                     uid = uuid.UUID(stored)
             except Exception as e:
-                print(f"[auth_ws] exception: {e!r}")
-
-    print(f"[auth_ws] final uid: {uid}")
+                log.warning("[auth_ws] ticket 검증 실패: %s", e)
     if uid is None:
         return None
 
