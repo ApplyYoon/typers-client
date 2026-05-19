@@ -1,198 +1,193 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  BarChart, Bar,
 } from 'recharts';
+import { useAuth } from '../context/AuthContext';
+import { practiceApi } from '../api/practice';
+import type { StatsResponse } from '../api/practice';
 import './Profile.css';
 
-const WPM_DATA = [
-  { date: '4/11', wpm: 120 },
-  { date: '4/12', wpm: 135 },
-  { date: '4/13', wpm: 128 },
-  { date: '4/14', wpm: 145 },
-  { date: '4/15', wpm: 140 },
-  { date: '4/16', wpm: 155 },
-  { date: '4/17', wpm: 162 },
-  { date: '4/18', wpm: 158 },
-  { date: '4/19', wpm: 170 },
-  { date: '4/20', wpm: 175 },
-  { date: '4/21', wpm: 168 },
+const LEVEL_INFO = [
+  { label: '입문', color: '#9ca3af', emoji: '🌱' },
+  { label: '초급', color: '#f59e0b', emoji: '🔥' },
+  { label: '중급', color: '#3b82f6', emoji: '⚡' },
+  { label: '고급', color: '#8758FF', emoji: '🚀' },
+  { label: '마스터', color: '#6DE701', emoji: '👑' },
 ];
 
-const ACC_DATA = [
-  { date: '4/11', accuracy: 91 },
-  { date: '4/12', accuracy: 93 },
-  { date: '4/13', accuracy: 90 },
-  { date: '4/14', accuracy: 94 },
-  { date: '4/15', accuracy: 95 },
-  { date: '4/16', accuracy: 93 },
-  { date: '4/17', accuracy: 96 },
-  { date: '4/18', accuracy: 97 },
-  { date: '4/19', accuracy: 95 },
-  { date: '4/20', accuracy: 98 },
-  { date: '4/21', accuracy: 96 },
-];
+// CPM 기준 다음 레벨 목표
+const LEVEL_CPM_GOAL = [100, 200, 300, 400, 999];
 
-const MONTHLY_DATA = [
-  { month: '24.1', wpm: 120, accuracy: 88 },
-  { month: '24.2', wpm: 130, accuracy: 90 },
-  { month: '24.3', wpm: 140, accuracy: 91 },
-  { month: '24.4', wpm: 135, accuracy: 89 },
-  { month: '24.5', wpm: 150, accuracy: 93 },
-  { month: '24.6', wpm: 155, accuracy: 94 },
-  { month: '24.7', wpm: 160, accuracy: 95 },
-  { month: '24.8', wpm: 165, accuracy: 96 },
-];
-
-type ChartRange = '1주' | '1달' | '분기별' | '상반기' | '전체';
+type ChartRange = '1주' | '1달' | '3달';
+const RANGE_DAYS: Record<ChartRange, number> = { '1주': 7, '1달': 30, '3달': 90 };
 
 const Profile: React.FC = () => {
-  const [wpmRange, setWpmRange] = useState<ChartRange>('1주');
-  const [accRange, setAccRange] = useState<ChartRange>('1주');
+  const { user } = useAuth();
+  const [stats, setStats]   = useState<StatsResponse | null>(null);
+  const [range, setRange]   = useState<ChartRange>('1주');
+  const [loading, setLoading] = useState(true);
 
-  const ranges: ChartRange[] = ['1주', '1달', '분기별', '상반기', '전체'];
+  useEffect(() => {
+    if (!user) return;
+    setLoading(true);
+    practiceApi.getStats(RANGE_DAYS[range])
+      .then(setStats)
+      .catch(() => setStats(null))
+      .finally(() => setLoading(false));
+  }, [user, range]);
 
-  const LEVEL_XP = 3400;
-  const NEXT_XP = 5000;
-  const xpPct = (LEVEL_XP / NEXT_XP) * 100;
+  if (!user) {
+    return (
+      <div className="profile-page">
+        <div className="profile-container">
+          <p style={{ textAlign: 'center', color: '#9ca3af', marginTop: 80 }}>
+            로그인이 필요합니다.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const level    = Math.min(user.level, 4);
+  const info     = LEVEL_INFO[level];
+  const goalCpm  = LEVEL_CPM_GOAL[level];
+  const bestCpm  = stats?.best_cpm ?? user.initial_cpm;
+  const xpPct    = level >= 4 ? 100 : Math.min((bestCpm / goalCpm) * 100, 100);
+
+  const cpmData = stats?.daily.map(d => ({
+    date: d.date.slice(5),   // MM-DD
+    cpm: Math.round(d.avg_cpm),
+  })) ?? [];
+
+  const accData = stats?.daily.map(d => ({
+    date: d.date.slice(5),
+    accuracy: Math.round(d.avg_accuracy),
+  })) ?? [];
+
+  const ranges: ChartRange[] = ['1주', '1달', '3달'];
 
   return (
     <div className="profile-page">
       <div className="profile-container">
+
         {/* Header card */}
         <div className="profile-header-card">
           <div className="profile-mascot-wrap">
             <div className="profile-mascot-bg" />
             <img src="/logo_nbg.png" alt="logo" className="profile-mascot" />
           </div>
+
           <div className="profile-info">
-            <h2 className="profile-username">Ppodoomii83</h2>
+            <h2 className="profile-username">{user.username}</h2>
+            <div className="profile-level-badge" style={{ color: info.color }}>
+              {info.emoji} Lv.{level} {info.label}
+            </div>
             <div className="profile-level-row">
-              <span className="profile-level-label">다음 티어까지</span>
+              <span className="profile-level-label">
+                {level >= 4 ? '최고 레벨 달성' : `다음 레벨까지 ${goalCpm} CPM`}
+              </span>
               <div className="profile-xp-bar">
-                <div className="profile-xp-fill" style={{ width: `${xpPct}%` }} />
+                <div className="profile-xp-fill" style={{ width: `${xpPct}%`, background: info.color }} />
               </div>
-              <span className="profile-xp-text">{LEVEL_XP.toLocaleString()}</span>
-              <span className="profile-xp-max">{NEXT_XP.toLocaleString()}</span>
+              <span className="profile-xp-text">{bestCpm} CPM</span>
             </div>
-            <p className="profile-attendance">출석</p>
-          </div>
 
-          {/* Grape grid */}
-          <div className="grape-grid">
-            {Array.from({ length: 11 }).map((_, i) => (
-              <img key={i} src="/logo_nbg.png" alt="logo" className="grape-item" />
-            ))}
-          </div>
-        </div>
-
-        {/* WPM Chart */}
-        <div className="chart-card">
-          <div className="chart-header">
-            <h3 className="chart-title">타수 그래프(WPM)</h3>
-            <div className="chart-ranges">
-              {ranges.map((r) => (
-                <button
-                  key={r}
-                  className={`range-btn ${wpmRange === r ? 'active' : ''}`}
-                  onClick={() => setWpmRange(r)}
-                >
-                  {r}
-                </button>
-              ))}
-            </div>
-          </div>
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={WPM_DATA} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip
-                contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-              />
-              <Line
-                type="monotone"
-                dataKey="wpm"
-                stroke="#8758FF"
-                strokeWidth={2.5}
-                dot={{ r: 3, fill: '#8758FF' }}
-                activeDot={{ r: 5 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Accuracy Chart */}
-        <div className="chart-card">
-          <div className="chart-header">
-            <h3 className="chart-title">정확도 그래프</h3>
-            <div className="chart-ranges">
-              {ranges.map((r) => (
-                <button
-                  key={r}
-                  className={`range-btn ${accRange === r ? 'active' : ''}`}
-                  onClick={() => setAccRange(r)}
-                >
-                  {r}
-                </button>
-              ))}
-            </div>
-          </div>
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={ACC_DATA} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} domain={[80, 100]} unit="%" />
-              <Tooltip
-                contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                formatter={(v) => v !== undefined ? [`${v}%`, '정확도'] : ['', '']}
-              />
-              <Line
-                type="monotone"
-                dataKey="accuracy"
-                stroke="#03CF5D"
-                strokeWidth={2.5}
-                dot={{ r: 3, fill: '#03CF5D' }}
-                activeDot={{ r: 5 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Monthly bar chart */}
-        <div className="chart-card">
-          <div className="chart-header">
-            <h3 className="chart-title">나의 활동 - 2024년 8월 조사</h3>
-          </div>
-          <div className="monthly-chart-wrap">
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={MONTHLY_DATA} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip
-                  contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                />
-                <Bar dataKey="wpm" fill="#8758FF" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="accuracy" fill="#03CF5D" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-
-            <div className="monthly-mascot">
-              <img src="/logo_nbg.png" alt="logo" className="monthly-mascot-emoji" />
-              <div className="monthly-speech-bubble">
-                <p>와, 열심 먹으려<br />Ppodoomii83!</p>
+            <div className="profile-stat-row">
+              <div className="profile-mini-stat">
+                <span className="profile-mini-value">{stats?.best_cpm ?? '—'}</span>
+                <span className="profile-mini-label">최고 CPM</span>
+              </div>
+              <div className="profile-mini-stat">
+                <span className="profile-mini-value">{stats?.total_sessions ?? '—'}</span>
+                <span className="profile-mini-label">총 세션</span>
+              </div>
+              <div className="profile-mini-stat">
+                <span className="profile-mini-value">{user.initial_cpm}</span>
+                <span className="profile-mini-label">시작 CPM</span>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Range tabs */}
+        <div className="chart-range-tabs">
+          {ranges.map(r => (
+            <button
+              key={r}
+              className={`range-btn ${range === r ? 'active' : ''}`}
+              onClick={() => setRange(r)}
+            >
+              {r}
+            </button>
+          ))}
+        </div>
+
+        {loading ? (
+          <div className="profile-loading">데이터 불러오는 중...</div>
+        ) : cpmData.length === 0 ? (
+          <div className="chart-card">
+            <p className="chart-empty">이 기간에 연습 기록이 없습니다.</p>
+          </div>
+        ) : (
+          <>
+            {/* CPM Chart */}
+            <div className="chart-card">
+              <div className="chart-header">
+                <h3 className="chart-title">타수 (CPM)</h3>
+              </div>
+              <ResponsiveContainer width="100%" height={200}>
+                <LineChart data={cpmData} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} />
+                  <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                  <Line type="monotone" dataKey="cpm" stroke="#8758FF" strokeWidth={2.5}
+                    dot={{ r: 3, fill: '#8758FF' }} activeDot={{ r: 5 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Accuracy Chart */}
+            <div className="chart-card">
+              <div className="chart-header">
+                <h3 className="chart-title">정확도 (%)</h3>
+              </div>
+              <ResponsiveContainer width="100%" height={200}>
+                <LineChart data={accData} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} domain={[50, 100]} unit="%" />
+                  <Tooltip
+                    contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                    formatter={(v) => v !== undefined ? [`${v}%`, '정확도'] : ['', '']}
+                  />
+                  <Line type="monotone" dataKey="accuracy" stroke="#03CF5D" strokeWidth={2.5}
+                    dot={{ r: 3, fill: '#03CF5D' }} activeDot={{ r: 5 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Session count bar */}
+            <div className="chart-card">
+              <div className="chart-header">
+                <h3 className="chart-title">일별 세션 수</h3>
+              </div>
+              <ResponsiveContainer width="100%" height={160}>
+                <BarChart
+                  data={stats?.daily.map(d => ({ date: d.date.slice(5), count: d.session_count }))}
+                  margin={{ top: 8, right: 8, left: -20, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                  <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+                  <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                  <Bar dataKey="count" fill="#8758FF" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

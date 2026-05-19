@@ -1,9 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
 import { getRecords } from '../utils/battleStorage';
+import { useAuth } from '../context/AuthContext';
+import { practiceApi } from '../api/practice';
 import './Home.css';
 
 const MODES = [
@@ -35,10 +37,24 @@ function buildWeeklyData() {
 }
 
 const Home: React.FC = () => {
-  const navigate   = useNavigate();
-  const weekData   = useMemo(buildWeeklyData, []);
-  const hasData    = weekData.some(d => d.cpm > 0);
+  const navigate    = useNavigate();
+  const { user }    = useAuth();
   const [activeMode, setActiveMode] = useState(0);
+
+  // 로그인 시 API, 비로그인 시 localStorage
+  const localWeekData = useMemo(buildWeeklyData, []);
+  const [apiWeekData, setApiWeekData] = useState<{ label: string; cpm: number }[] | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    practiceApi.getStats(7).then(stats => {
+      const data = stats.daily.map(d => ({ label: d.date.slice(5), cpm: Math.round(d.avg_cpm) }));
+      setApiWeekData(data);
+    }).catch(() => {});
+  }, [user]);
+
+  const weekData = user ? (apiWeekData ?? []) : localWeekData;
+  const hasData  = weekData.some(d => d.cpm > 0);
 
   return (
     <div className="home">
@@ -47,7 +63,10 @@ const Home: React.FC = () => {
       <section className="home-hero">
         <div className="home-hero-text">
           <p className="home-eyebrow">한국 타이핑 배틀 플랫폼</p>
-          <h1 className="home-title">타이핑으로<br />실력을 증명하세요</h1>
+          <h1 className="home-title">
+            {user ? `${user.username}님,` : '타이핑으로'}<br />
+            {user ? '오늘도 달려볼까요?' : '실력을 증명하세요'}
+          </h1>
         </div>
         <div className="home-hero-actions">
           <button className="btn-primary" onClick={() => navigate('/battle')}>

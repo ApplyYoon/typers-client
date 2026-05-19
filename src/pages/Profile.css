@@ -204,3 +204,56 @@
   border: 4px solid transparent;
   border-bottom-color: var(--purple-primary);
 }
+
+/* ── 동적 데이터용 추가 스타일 ─────────────────────────────── */
+.profile-level-badge {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.profile-stat-row {
+  display: flex;
+  gap: 20px;
+  margin-top: 12px;
+}
+
+.profile-mini-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.profile-mini-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--gray-800);
+  line-height: 1;
+}
+
+.profile-mini-label {
+  font-size: 11px;
+  color: #9ca3af;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.chart-range-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.profile-loading {
+  text-align: center;
+  color: #9ca3af;
+  padding: 40px;
+  font-size: 14px;
+}
+
+.chart-empty {
+  text-align: center;
+  color: #9ca3af;
+  padding: 40px;
+  font-size: 14px;
+}

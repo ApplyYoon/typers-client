@@ -5,6 +5,7 @@ import { useTypingEngine } from '../hooks/useTypingEngine';
 import TypingText from '../components/TypingText';
 import { savePracticeSession, getActivityData } from '../utils/practiceStorage';
 import { useAuth } from '../context/AuthContext';
+import { practiceApi } from '../api/practice';
 import './Typing.css';
 
 /* ── 타입 ─────────────────────────────────────────────────── */
@@ -60,9 +61,11 @@ const Typing: React.FC = () => {
   const langRef          = useRef<'ko' | 'en'>('ko');
   const modeRef          = useRef<TypingMode>('short');
   const sentencesDoneRef = useRef(0);
+  const durationRef      = useRef(60); // stale closure 방지용 — duration state를 ref로 동기화
 
-  useEffect(() => { langRef.current  = lang; },  [lang]);
-  useEffect(() => { modeRef.current  = mode; },  [mode]);
+  useEffect(() => { langRef.current     = lang;     }, [lang]);
+  useEffect(() => { modeRef.current     = mode;     }, [mode]);
+  useEffect(() => { durationRef.current = duration; }, [duration]);
 
   const handleComplete = useCallback(() => {
     if (finishedRef.current) return;
@@ -108,7 +111,20 @@ const Typing: React.FC = () => {
       lang: langRef.current,
     });
     setChartData(getActivityData());
-  }, []);
+
+    // 로그인 상태일 때 서버에도 세션 저장 (실패해도 UX 차단 없이 silent)
+    if (user) {
+      practiceApi.createSession({
+        mode:      modeRef.current,
+        lang:      langRef.current,
+        cpm,
+        accuracy:  acc,
+        duration:  durationRef.current,
+        sentences: sentencesDoneRef.current,
+        error_log: getErrorLogRef.current(),
+      }).catch(() => {/* 네트워크 오류 무시 */});
+    }
+  }, [user]);
 
   // ── 카운트다운 ────────────────────────────────────────────
   useEffect(() => {
